@@ -41,6 +41,7 @@ const CommentSection = ({ navigation, route }) => {
   const eventName = route.params?.eventName;
   const [username, setUsername] = useState("");
 
+  console.log("you are there? " + isAuthenticated);
   useEffect(() => {
     getData();
     console.log("eventName:", eventName);
@@ -152,6 +153,11 @@ const CommentSection = ({ navigation, route }) => {
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
+
+  const handleGoBack = () => {
+    navigation.navigate("HomeScreen"); // Replace "ScreenName" with the actual screen name you want to navigate to
+  };
+
   const getData = async () => {
     try {
       const value = await AsyncStorage.getItem("Username");
@@ -181,6 +187,10 @@ const CommentSection = ({ navigation, route }) => {
           )}
         </View>
       </View>
+
+      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+        <Text style={styles.backButtonText}>{"< Back"}</Text>
+      </TouchableOpacity>
 
       <View style={styles.innerContainer}>
         <Text style={styles.eventName}>
@@ -262,6 +272,14 @@ const styles = StyleSheet.create({
   },
   flatListCommentContainer: {
     flex: 1,
+  },
+  backButton: {
+    marginBottom: 16,
+    padding: 20,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: "#3498db",
   },
   innerContainer: {
     borderWidth: 1,

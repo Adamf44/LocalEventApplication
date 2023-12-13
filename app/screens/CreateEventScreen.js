@@ -23,7 +23,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
-const CreateEventScreen = ({ navigation }) => {
+const CreateEventScreen = ({ navigation, route }) => {
   const [eventName, setEventName] = useState("");
   const [eventDescription, setEventDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -41,10 +41,35 @@ const CreateEventScreen = ({ navigation }) => {
   const [organizerContact, setOrganizerContact] = useState("");
   const [organizerSocialMedia, setOrganizerSocialMedia] = useState("");
   const [eventComments, setEventComments] = useState([]);
+  const [eventCounty, setEventCounty] = useState("");
+  const [eventVillage, setEventVillage] = useState("");
+
+  //  const { isAuthenticated = false } = route.params || {};
+
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     getData();
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      // If user is authenticated, set isAuthenticated to true
+      // Otherwise, set it to false
+      setIsAuthenticated(!!user);
+    });
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribe();
   }, []); // The empty dependency array ensures that this effect runs only once when the component mounts
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Check the authentication status here and perform the necessary actions
+      if (!isAuthenticated) {
+        // User is not authenticated, handle the logic (e.g., show login button)
+        // ...
+      }
+    }, [isAuthenticated])
+  );
 
   async function pickImage() {
     // No permissions request is necessary for launching the image library
@@ -69,14 +94,22 @@ const CreateEventScreen = ({ navigation }) => {
 
   const createEvent = async () => {
     try {
+      if (!isAuthenticated) {
+        Alert.alert(
+          "Authentication Required",
+          "Please log in to create an event.",
+          [{ text: "OK", onPress: () => navigation.navigate("LoginScreen") }]
+        );
+        return;
+      }
       if (
         !eventName ||
         !eventDescription ||
-        !eventDate ||
         !eventStartTime ||
         !eventEndTime ||
         !eventLocation ||
-        !eventImage
+        !eventCounty ||
+        !eventVillage
       ) {
         Alert.alert("Error", "All fields are required.");
         return;
@@ -109,9 +142,31 @@ const CreateEventScreen = ({ navigation }) => {
         organizerContact,
         organizerSocialMedia,
         eventComments,
+        eventCounty,
+        eventVillage,
       };
 
       await setDoc(doc(db, "Events", eventName), data);
+
+      setEventName("");
+      setEventDescription("");
+      setEventDate("");
+      setEventStartTime("");
+      setEventEndTime("");
+      setEventLocation("");
+      setEventImage(null);
+      setUsername("");
+      setEventStatus("Upcoming");
+      setRegistrationStatus("Open");
+      setRegistrationDeadline("");
+      setEventTags([]);
+      setAttendeeCount(0);
+      setOrganizerName("");
+      setOrganizerContact("");
+      setOrganizerSocialMedia("");
+      setEventComments([]);
+      setEventCounty("");
+      setEventVillage("");
 
       Alert.alert("Success", "You have successfully created an event!", [
         {
@@ -138,37 +193,38 @@ const CreateEventScreen = ({ navigation }) => {
     }
   };
 
+  //when user clicks log in
+  const handleLoginPress = () => {
+    navigation.navigate("LoginScreen");
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <View style={styles.appHead}>
+        <Text style={styles.titleText}>EventFinder</Text>
+        <Text style={styles.appHeadTitle}>Create Event</Text>
+        <View style={styles.searchContainer}>
+          {isAuthenticated ? null : (
+            <TouchableOpacity
+              onPress={handleLoginPress}
+              style={styles.logInButton}
+            >
+              <Text style={styles.logInButtonText}>Log in</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.title}>Create an Event!</Text>
+        <Text style={styles.sectionTitle}>Event Information</Text>
         <TextInput
           value={eventName}
           onChangeText={(text) => setEventName(text)}
           placeholder="Name of Event/Activity"
           style={styles.input}
-        />
-        {/* ... (Repeat for other TextInput fields) */}
-        <TouchableOpacity style={styles.button} onPress={pickImage}>
-          <Text style={styles.buttonText}>Pick Image</Text>
-        </TouchableOpacity>
-
-        {eventImage && (
-          <Image
-            source={{ uri: eventImage }}
-            style={{ width: 200, height: 200, marginBottom: 10 }}
-          />
-        )}
-
-        <Text style={styles.title}>Required fields</Text>
-        <TextInput
-          style={styles.input}
-          value={eventName}
-          onChangeText={(text) => setEventName(text)}
-          placeholder="Name of Event/Activity"
         />
         <TextInput
           style={styles.input}
@@ -176,21 +232,31 @@ const CreateEventScreen = ({ navigation }) => {
           onChangeText={(text) => setEventDescription(text)}
           placeholder="Short description of event"
           keyboardType="email-address"
-          multiline // Added multiline for longer descriptions
-          numberOfLines={3} // Adjust the number of lines for multiline
+          multiline
+          numberOfLines={3}
+        />
+
+        <Text style={styles.sectionTitle}>Location</Text>
+        <TextInput
+          style={styles.input}
+          value={eventCounty}
+          onChangeText={(text) => setEventCounty(text)}
+          placeholder="County"
         />
         <TextInput
           style={styles.input}
-          value={eventDate}
-          onChangeText={(text) => setEventDate(text)}
-          placeholder="Date of event in DD/MM/Y"
+          value={eventVillage}
+          onChangeText={(text) => setEventVillage(text)}
+          placeholder="Town/Village"
         />
         <TextInput
           style={styles.input}
           value={eventLocation}
           onChangeText={(text) => setEventLocation(text)}
-          placeholder="Event/Activity Location"
+          placeholder="Address Line 3 (optional)"
         />
+
+        <Text style={styles.sectionTitle}>Event Time</Text>
         <TextInput
           style={styles.input}
           value={eventStartTime}
@@ -203,24 +269,7 @@ const CreateEventScreen = ({ navigation }) => {
           onChangeText={(text) => setEventEndTime(text)}
           placeholder="Event/Activity End time"
         />
-        <TextInput
-          style={styles.input}
-          value={eventStatus}
-          onChangeText={(text) => setEventStatus(text)}
-          placeholder="Event Status"
-        />
-        <TextInput
-          style={styles.input}
-          value={registrationStatus}
-          onChangeText={(text) => setRegistrationStatus(text)}
-          placeholder="Registration Status"
-        />
-        <TextInput
-          style={styles.input}
-          value={registrationDeadline}
-          onChangeText={(text) => setRegistrationDeadline(text)}
-          placeholder="Registration Deadline"
-        />
+        <Text style={styles.sectionTitle}>Organizer Information</Text>
         <TextInput
           style={styles.input}
           value={organizerName}
@@ -232,7 +281,7 @@ const CreateEventScreen = ({ navigation }) => {
           value={organizerContact}
           onChangeText={(text) => setOrganizerContact(text)}
           placeholder="Organizer Contact"
-          keyboardType="phone-pad" // Adjusted keyboard type for contact
+          keyboardType="phone-pad"
         />
         <TextInput
           style={styles.input}
@@ -240,13 +289,10 @@ const CreateEventScreen = ({ navigation }) => {
           onChangeText={(text) => setOrganizerSocialMedia(text)}
           placeholder="Organizer Social Media"
         />
-        <TextInput
-          style={styles.input}
-          value={attendeeCount.toString()}
-          onChangeText={(text) => setAttendeeCount(parseInt(text, 10))}
-          placeholder="Attendee Count"
-          keyboardType="numeric"
-        />
+        {/* Add other organizer fields as needed */}
+
+        {/* Tags Section */}
+        <Text style={styles.sectionTitle}>Event Tags</Text>
         <TextInput
           style={styles.input}
           value={eventTags.join(", ")}
@@ -254,8 +300,21 @@ const CreateEventScreen = ({ navigation }) => {
           placeholder="Event Tags (comma-separated)"
         />
 
-        <TouchableOpacity style={styles.button} onPress={createEvent}>
-          <Text style={styles.buttonText}>Create Event</Text>
+        <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+          <Text style={styles.imagePickerButtonText}>Pick Image</Text>
+        </TouchableOpacity>
+        {eventImage && (
+          <Image
+            source={{ uri: eventImage }}
+            style={{ width: 200, height: 200, marginBottom: 10 }}
+          />
+        )}
+
+        <TouchableOpacity
+          style={styles.createEventButton}
+          onPress={createEvent}
+        >
+          <Text style={styles.createEventButtonText}>Create Event</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -268,11 +327,60 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingTop: StatusBar.currentHeight || 40,
   },
+  appHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd", // Add a subtle border
+    backgroundColor: "#3498db", // Update header background color
+  },
   contentContainer: {
     flexGrow: 1,
     justifyContent: "center",
-    alignItems: "center",
     paddingBottom: 40,
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff", // Set text color to white
+  },
+
+  logInButton: {
+    backgroundColor: "#e74c3c",
+    borderRadius: 8,
+    padding: 15,
+    width: 80,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  logInButtonText: {
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  sectionTitle: {
+    alignSelf: "center",
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#3498db",
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  appHeadTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#ffffff",
+    marginTop: 10,
+    marginBottom: 5,
   },
   title: {
     fontSize: 24,
@@ -281,6 +389,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   input: {
+    alignSelf: "center",
     width: "80%",
     height: 40,
     borderWidth: 1,
@@ -298,6 +407,7 @@ const styles = StyleSheet.create({
     height: 40,
     marginBottom: 20,
     justifyContent: "center",
+    alignSelf: "center",
   },
   imagePickerButtonText: {
     color: "#fff",
@@ -318,6 +428,7 @@ const styles = StyleSheet.create({
     height: 40,
     marginBottom: 20,
     justifyContent: "center",
+    alignSelf: "center",
   },
   createEventButtonText: {
     color: "#fff",

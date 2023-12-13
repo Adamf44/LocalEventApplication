@@ -31,6 +31,7 @@ import {
   doc,
   setDoc,
   getDocs,
+  getDoc,
   addDoc,
   updateDoc,
   query,
@@ -55,13 +56,24 @@ const HomeScreen = ({ navigation, route }) => {
   const [eventLocation, setEventLocation] = useState("");
   const [eventPic, setEventPic] = useState(".");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { isAuthenticated } = route.params || { isAuthenticated: false };
+  const { userEmail, setUserEmail } = route.params || {};
+  const { isAuthenticated = false } = route.params || {};
 
-  console.log("It isssssss" + isAuthenticated);
+  console.log("we areeee" + isAuthenticated);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Check the authentication status here and perform the necessary actions
+      if (isAuthenticated === undefined || isAuthenticated === false) {
+        // User is not authenticated, handle the logic (e.g., show login button)
+        // ...
+      }
+    }, [isAuthenticated])
+  );
 
   const fetchData = async () => {
     // Set isRefreshing to true when starting to fetch data
@@ -116,6 +128,7 @@ const HomeScreen = ({ navigation, route }) => {
     const fetchData = async () => {
       const querySnapshot = await getDocs(collection(db, "Events"));
       let events = [];
+
       querySnapshot.forEach((doc) => {
         const {
           eventName,
@@ -127,20 +140,26 @@ const HomeScreen = ({ navigation, route }) => {
           eventLocation,
           username,
           imageUrl,
+          communityName, // Add communityName to destructure
         } = doc.data();
-        events.push({
-          id: doc.id,
-          eventName,
-          category,
-          eventDate,
-          eventDescription,
-          eventStartTime,
-          eventEndTime,
-          eventLocation,
-          username,
-          imageUrl,
-        });
+
+        // Check if the event has a communityName attribute
+        if (!communityName) {
+          events.push({
+            id: doc.id,
+            eventName,
+            category,
+            eventDate,
+            eventDescription,
+            eventStartTime,
+            eventEndTime,
+            eventLocation,
+            username,
+            imageUrl,
+          });
+        }
       });
+
       setEvent(events);
     };
 
@@ -153,16 +172,88 @@ const HomeScreen = ({ navigation, route }) => {
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
-  //when user clicks log in
+  const handleBookmark = async (eventName) => {
+    try {
+      const eventRef = doc(db, "Events", eventName);
+      const eventDoc = await getDoc(eventRef);
+
+      if (eventDoc.exists()) {
+        let { bookmarkedBy } = eventDoc.data();
+
+        // Ensure bookmarkedBy is initialized as an empty array if it doesn't exist
+        if (!bookmarkedBy) {
+          bookmarkedBy = [];
+        }
+
+        // Check if userEmail is already in the bookmarkedBy array
+        if (!bookmarkedBy.includes(userEmail)) {
+          // If not, update the document with userEmail added to bookmarkedBy
+          await updateDoc(eventRef, {
+            bookmarkedBy: arrayUnion(userEmail),
+          });
+
+          Alert.alert("Event Bookmarked", "This event has been bookmarked.");
+        } else {
+          Alert.alert(
+            "Already Bookmarked",
+            "You have already bookmarked this event."
+          );
+        }
+      } else {
+        Alert.alert(
+          "Event Not Found",
+          "The event you are trying to bookmark does not exist."
+        );
+      }
+    } catch (error) {
+      console.error("Error bookmarking event:", error.message);
+    }
+  };
+
   const handleShowMorePress = (eventName) => {
     console.log("handleShowMorePress called with eventName:", eventName);
     navigation.navigate("ShowMoreScreen", { eventName });
   };
 
-  const handleCommentPress = (eventName) => {
-    console.log("CommentPress called with eventName:", eventName);
-    navigation.navigate("CommentSection", { eventName });
+  const handleAttend = (userEmail, eventName) => {
+    const eventRef = collection(db, "Events");
+    const eventQuery = query(eventRef, where("eventName", "==", eventName));
+
+    getDocs(eventQuery)
+      .then((querySnapshot) => {
+        if (querySnapshot.docs.length > 0) {
+          const eventDoc = querySnapshot.docs[0];
+          const attendeesArray = eventDoc.data().attendees || [];
+
+          if (!attendeesArray.includes(userEmail)) {
+            // User's email is not in the attendees array, navigate to AttendEvent
+            navigation.navigate("AttendEvent", {
+              userEmail,
+              eventName,
+              isAuthenticated,
+            });
+          } else {
+            // User's email is already in the attendees array, show a message
+            Alert.alert(
+              "Already Registered",
+              "You have already registered for this event."
+            );
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking attendees:", error);
+      });
   };
+
+  const handleComment = (eventName) => {
+    navigation.navigate("CommentSection", {
+      eventName,
+      isAuthenticated,
+    });
+  };
+
+  //when user clicks log in
 
   return (
     <View style={styles.container}>
@@ -170,8 +261,7 @@ const HomeScreen = ({ navigation, route }) => {
         <Text style={styles.titleText}>EventFinder</Text>
         <View style={styles.searchContainer}>
           <TextInput placeholder="Search..." style={styles.searchBar} />
-          {isAuthenticated ? null : ( // User is authenticated, so don't render the "Log in" button
-            // User is not authenticated, so render the "Log in" button
+          {isAuthenticated ? null : (
             <TouchableOpacity
               onPress={handleLoginPress}
               style={styles.logInButton}
@@ -197,7 +287,10 @@ const HomeScreen = ({ navigation, route }) => {
               <View style={styles.eventCardHead}>
                 <Text style={styles.eventName}>"{item.eventName}"</Text>
 
-                <TouchableOpacity style={styles.bookButton}>
+                <TouchableOpacity
+                  style={styles.bookButton}
+                  onPress={() => handleBookmark(item.eventName)}
+                >
                   <Icon
                     name="bookmark"
                     size={20}
@@ -233,7 +326,10 @@ const HomeScreen = ({ navigation, route }) => {
                 >
                   <Text style={styles.showMoreButtonText}>Show More</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.registerDetailsButton}>
+                <TouchableOpacity
+                  style={styles.registerDetailsButton}
+                  onPress={() => handleAttend(userEmail, item.eventName)}
+                >
                   <Text style={styles.registerDetailsButtonText}>
                     Attend event
                   </Text>
@@ -241,7 +337,7 @@ const HomeScreen = ({ navigation, route }) => {
 
                 <TouchableOpacity
                   style={styles.commentButton}
-                  onPress={() => handleCommentPress(item.eventName)}
+                  onPress={() => handleComment(item.eventName)}
                 >
                   <Icon
                     name="comment"
@@ -266,7 +362,7 @@ const styles = StyleSheet.create({
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
-    flexDirection: "column",
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
@@ -346,7 +442,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     height: 40,
-    width: screenWidth * 0.6,
+    width: screenWidth * 0.3,
     borderColor: "#bdc3c7",
     borderWidth: 1,
     fontSize: 16,

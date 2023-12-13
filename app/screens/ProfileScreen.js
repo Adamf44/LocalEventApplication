@@ -19,12 +19,15 @@ import { getAuth, signOut } from "firebase/auth"; // Import signOut from firebas
 import { Button } from "react-native-web";
 
 const screenWidth = Dimensions.get("window").width;
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen = ({ navigation, route }) => {
   // State variables
   const [userData, setUserData] = useState(null);
   const [username, setUsername] = useState("");
   const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { isAuthenticated } = route.params || { isAuthenticated: false };
+
+  console.log("we areeee" + isAuthenticated);
 
   function getUserAbout() {
     getDocs(
@@ -54,7 +57,7 @@ const ProfileScreen = ({ navigation }) => {
   useEffect(() => {
     getData();
     getUserAbout();
-  }, [currentUserEmail, isRefreshing]); // Include isRefreshi// Run the effect whenever currentUserEmail changes
+  }, [currentUserEmail, isRefreshing]);
 
   const getData = async () => {
     try {
@@ -63,24 +66,31 @@ const ProfileScreen = ({ navigation }) => {
         setCurrentUserEmail(value);
       }
     } catch (e) {
-      // Handle error reading value
+      console.error("Error reading user email from AsyncStorage:", e);
     }
   };
+
   const handleLogout = async () => {
+    setUserData(null);
+    setUsername(null);
+
     const auth = getAuth();
     try {
       await signOut(auth);
       // Clear AsyncStorage and navigate to the login screen
+      isAuthenticated: false;
       await AsyncStorage.removeItem("userEmail");
-      navigation.navigate("LoginScreen");
+      navigation.navigate("HomeScreen", {});
     } catch (error) {
       console.error("Error signing out:", error);
     }
   };
+  const handleBookmarkButton = async () => {
+    navigation.navigate("EventBookmarks", { currentUserEmail });
+  };
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    // Trigger data fetching again
     getUserAbout();
     setIsRefreshing(false);
   };
@@ -88,46 +98,40 @@ const ProfileScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
-        <View style={styles.searchContainer}>
-          <TextInput placeholder="Search..." style={styles.searchBar} />
-          <TouchableOpacity style={styles.logOutButton} onPress={handleLogout}>
-            <Text style={styles.logOutButtonText}>Log out</Text>
-          </TouchableOpacity>
-        </View>
+
+        <TouchableOpacity style={styles.headButton} onPress={handleLogout}>
+          <Text style={styles.logOutButtonText}>Log out</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.buttonCon1}>
         <TouchableOpacity style={styles.eventButton}>
-          <Text style={styles.logOutButtonText}>Events</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.editButton}>
           <Text style={styles.logOutButtonText}>Edit account</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.eventButton}
+          onPress={() => handleBookmarkButton(currentUserEmail)}
+        >
+          <Text style={styles.logOutButtonText}>Saved Events</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.eventButton}>
+          <Text style={styles.logOutButtonText}>Event history</Text>
+        </TouchableOpacity>
       </View>
+      <Text style={styles.usernameText}>Welcome, {username}!</Text>
+      {userData &&
+        userData.map((item) => (
+          <View style={styles.innerContainer} key={item.username}>
+            <Text style={styles.fullName}>Full Name: {item.fullName}</Text>
+            <Text style={styles.userBio}>Bio: {item.userBio}</Text>
+            <Text style={styles.userEmail}>Email: {item.email}</Text>
+          </View>
+        ))}
 
-      <Text style={styles.usernameText}>@{username}</Text>
-
-      <View style={styles.flatListContainer}>
-        <FlatList
-          data={userData}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-          keyExtractor={(item) => item.username}
-          renderItem={({ item }) => (
-            <View style={styles.innerContainer}>
-              <Text style={styles.fullName}>Full name: {item.fullName}</Text>
-              <Text style={styles.userBio}>Bio: {item.userBio}</Text>
-              <Text style={styles.userEmail}>Email: {item.email}</Text>
-
-              {/* ... (existing code) */}
-            </View>
-          )}
-        />
-      </View>
+      {userData && userData.length === 0 && (
+        <Text style={styles.noDataText}>No user data available.</Text>
+      )}
     </View>
   );
 };
@@ -139,7 +143,7 @@ const styles = StyleSheet.create({
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
-    flexDirection: "column",
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 16,
@@ -150,49 +154,33 @@ const styles = StyleSheet.create({
   buttonCon1: {
     flexDirection: "row",
     justifyContent: "center",
-    margin: 10,
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  searchBar: {
-    backgroundColor: "#ecf0f1",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    height: 40,
-    width: screenWidth * 0.6,
-    borderColor: "#bdc3c7",
-    borderWidth: 1,
-    fontSize: 16,
-    color: "#2c3e50",
-    marginRight: 10,
-  },
-  logInButton: {
+
+  headButton: {
     backgroundColor: "#e74c3c",
+    marginRight: "5%",
     borderRadius: 8,
-    padding: 15,
+    padding: 12,
     width: 80,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   eventButton: {
     backgroundColor: "#e74c3c",
+    margin: "5%",
     borderRadius: 8,
-    padding: 15,
-    width: 80,
+    padding: 12,
+    width: "25%",
     alignItems: "center",
-    margin: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  editButton: {
-    backgroundColor: "#e74c3c",
-    borderRadius: 8,
-    padding: 15,
-    width: 100,
-    alignItems: "center",
-    margin: 5,
-  },
-  logInButtonText: {
+  logOutButtonText: {
     fontSize: 14,
     color: "#fff",
     fontWeight: "bold",
@@ -201,25 +189,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  innerContainer: {
-    borderWidth: 1,
-    backgroundColor: "#fff",
-    borderColor: "#ddd",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    width: Dimensions.get("window").width * 0.8,
-    alignSelf: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
+
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
     color: "#fff",
+    marginLeft: "5%",
   },
   fullName: {
     fontSize: 18,
@@ -258,21 +233,7 @@ const styles = StyleSheet.create({
     color: "#7f8c8d",
     marginTop: 8,
   },
-  buttonContainer: {
-    flexDirection: "column",
-  },
-  logOutButton: {
-    backgroundColor: "#e74c3c",
-    borderRadius: 8,
-    padding: 15,
-    width: 80,
-    alignItems: "center",
-  },
-  logOutButtonText: {
-    fontSize: 14,
-    color: "#fff",
-    fontWeight: "bold",
-  },
+
   profileContainer: {
     alignItems: "center",
     marginTop: 20,
@@ -287,6 +248,45 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#2c3e50",
+  },
+  userProfileContainer: {
+    flex: 1,
+    backgroundColor: "#fff", // Set background color
+    padding: 16,
+  },
+  usernameText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#3498db", // Set text color to match the theme
+    marginBottom: 16,
+  },
+  innerContainer: {
+    borderWidth: 1,
+    backgroundColor: "#FFFFFF",
+    borderColor: "#ddd",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  fullName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#2c3e50", // Set text color to match the theme
+    marginBottom: 8,
+  },
+  userBio: {
+    fontSize: 14,
+    color: "#7f8c8d", // Set text color to match the theme
+    marginBottom: 8,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: "#7f8c8d", // Set text color to match the theme
   },
 });
 

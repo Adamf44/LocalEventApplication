@@ -19,6 +19,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import CommunityHome from "./app/screens/CommunityHome";
 import CreateCommunityEvent from "./app/screens/CreateCommunityEvent";
 import CommentSection from "./app/screens/CommentSection";
+import AttendEvent from "./app/screens/AttendEvent";
+import EventBookmarks from "./app/screens/EventBookmarks";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -64,6 +66,16 @@ const HomeStack = ({ isAuthenticated }) => {
       <Stack.Screen
         name="RegisterScreen"
         component={RegisterScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AttendEvent"
+        component={AttendEvent}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EventBookmarks"
+        component={EventBookmarks}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

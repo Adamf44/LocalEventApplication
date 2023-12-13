@@ -49,6 +49,7 @@ const CommunityHome = () => {
   const { community } = route.params || {};
   const [isRefreshing, setIsRefreshing] = useState(false);
   const navigation = useNavigation(); // Hook to get navigation object
+  const { userEmail, isAuthenticated } = route.params || {};
 
   const fetchData = async () => {
     setIsRefreshing(true);
@@ -106,59 +107,138 @@ const CommunityHome = () => {
     fetchData();
   }, [community]);
 
+  const handleRefresh = () => {
+    // Pull-down refresh triggers fetchData function
+    fetchData();
+  };
+
   const handleAddEvent = () => {
     // Navigate to the screen where users can add events
     navigation.navigate("CreateCommunityEvent", { communityName: community });
   };
 
+  //when user clicks log in
+  const handleLoginPress = () => {
+    navigation.navigate("LoginScreen");
+  };
+
+  const handleShowMorePress = (eventName) => {
+    console.log("handleShowMorePress called with eventName:", eventName);
+    navigation.navigate("ShowMoreScreen", { eventName });
+  };
+
+  const handleAttend = (userEmail, eventName) => {
+    const eventRef = collection(db, "Events");
+    const eventQuery = query(eventRef, where("eventName", "==", eventName));
+
+    getDocs(eventQuery)
+      .then((querySnapshot) => {
+        if (querySnapshot.docs.length > 0) {
+          const eventDoc = querySnapshot.docs[0];
+          const attendeesArray = eventDoc.data().attendees || [];
+
+          if (!attendeesArray.includes(userEmail)) {
+            // User's email is not in the attendees array, navigate to AttendEvent
+            navigation.navigate("AttendEvent", {
+              userEmail,
+              eventName,
+              isAuthenticated,
+            });
+          } else {
+            // User's email is already in the attendees array, show a message
+            Alert.alert(
+              "Already Registered",
+              "You have already registered for this event."
+            );
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking attendees:", error);
+      });
+  };
+
+  const handleComment = (eventName) => {
+    navigation.navigate("CommentSection", {
+      eventName,
+      isAuthenticated,
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Community: {community}</Text>
-      <TouchableOpacity style={styles.addButton} onPress={handleAddEvent}>
-        <Text style={styles.addButtonText}>Add Event</Text>
-      </TouchableOpacity>
-
+      <View style={styles.appHead}>
+        <Text style={styles.communityTitle}>Community: {community}</Text>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddEvent}>
+          <Text style={styles.addButtonText}>Add Event</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.flatListContainer}>
         <FlatList
           refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={fetchData} />
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
           }
           data={event}
           keyExtractor={(item) => item.eventName}
           renderItem={({ item }) => (
             <View style={styles.innerContainer}>
-              <Text style={styles.eventName}>{item.eventName}</Text>
+              <View style={styles.eventCardHead}>
+                <Text style={styles.eventName}>"{item.eventName}"</Text>
+
+                <TouchableOpacity style={styles.bookButton}>
+                  <Icon
+                    name="bookmark"
+                    size={20}
+                    color="#fff"
+                    style={styles.bookIcon}
+                  />
+                </TouchableOpacity>
+              </View>
               {item.imageUrl && (
                 <Image source={{ uri: item.imageUrl }} style={styles.image} />
               )}
-
-              <Text style={styles.eventDescription}>
-                "{item.eventDescription}""
-              </Text>
               <Text style={styles.eventLocation}>{item.eventLocation}</Text>
-              <View style={styles.eventTimeDateContainer}>
-                <Text style={styles.eventDate}>Date: {item.eventDate}</Text>
-                <Text style={styles.eventTime}>
-                  Time of start: {item.eventStartTime}
+              <Text style={styles.eventDate}>{item.eventDate}</Text>
+              <Text style={styles.eventDescription}>
+                {item.eventDescription}
+              </Text>
+              <View style={styles.timeContainer}>
+                <Text style={styles.eventStartTime}>
+                  Start: {item.eventStartTime}
                 </Text>
-                <Text style={styles.eventTime}>
-                  Time of end: {item.eventEndTime}
+                <Text style={styles.eventEndTime}>
+                  End: {item.eventEndTime}
                 </Text>
               </View>
-              <Text style={styles.postedTitle}>Posted by:</Text>
-              <Text style={styles.username}>{item.username}</Text>
+              <View style={styles.poster}>
+                <Text style={styles.postedTitle}>Posted by:</Text>
+                <Text style={styles.username}>{item.username}</Text>
+              </View>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.registerDetailsButton}>
+                <TouchableOpacity
+                  style={styles.showMoreButton}
+                  onPress={() => handleShowMorePress(item.eventName)}
+                >
+                  <Text style={styles.showMoreButtonText}>Show More</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.registerDetailsButton}
+                  onPress={() => handleAttend(userEmail, item.eventName)}
+                >
                   <Text style={styles.registerDetailsButtonText}>
-                    Register details
+                    Attend event
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.showMoreButton}>
-                  <Text style={styles.showMoreButtonText}>Show more</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.commentButton}>
+
+                <TouchableOpacity
+                  style={styles.commentButton}
+                  onPress={() => handleComment(item.eventName)}
+                >
                   <Icon
-                    name="comments"
+                    name="comment"
                     size={20}
                     color="#fff"
                     style={styles.commentIcon}
@@ -175,29 +255,8 @@ const CommunityHome = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: StatusBar.currentHeight || 50,
-    backgroundColor: "#fff",
-  },
-  flatListContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  innerContainer: {
-    borderWidth: 1,
-    backgroundColor: "#fff",
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 20,
-    width: screenWidth * 0.8,
-    alignSelf: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: "#3D464A", // Set background color
+    marginTop: StatusBar.currentHeight || 40,
   },
   title: {
     fontSize: 20,
@@ -208,57 +267,74 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "column",
   },
+  communityTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
+    marginBottom: 16,
+    marginTop: 8,
+  },
   addButton: {
     backgroundColor: "#27ae60",
     borderRadius: 8,
-    padding: 10,
+    padding: 15,
     marginBottom: 16,
     alignSelf: "center",
   },
   addButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
   },
-  commentButton: {
-    backgroundColor: "#2ecc71",
-    borderRadius: 8,
-    height: 70,
-    width: "20%",
-    justifyContent: "center",
-    alignSelf: "flex-end",
-    marginRight: 10, // Add margin to separate buttons
-    marginTop: -70,
-  },
-  commentButtonText: {
-    fontSize: 12,
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  commentIcon: {
-    alignSelf: "center",
-  },
-  showMoreButton: {
-    backgroundColor: "#e74c3c", // Choose a color for the Comments button
-    borderRadius: 8,
-    height: 30,
-    justifyContent: "center",
-    width: "70%",
-    alignSelf: "flex-start",
-    marginTop: 10,
-  },
-  showMoreButtonText: {
-    fontSize: 12,
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  trendText: {
+  appHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
-    fontSize: 20,
-    color: "#333",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd", // Add a subtle border
+    backgroundColor: "#3498db", // Update header background color
+  },
+  line: {
+    height: 2, // Adjust the thickness of the line
+    backgroundColor: "#3498db", // Match the background color or choose a different color
+    marginVertical: 5, // Add vertical spacing
+  },
+  flatListContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  innerContainer: {
+    borderWidth: 1,
+    backgroundColor: "#D3D3D3",
+    borderColor: "#ddd",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    width: screenWidth * 0.9,
+    alignSelf: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  eventCardHead: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    flexDirection: "column",
+  },
+
+  trendText: {
+    color: "#e74c3c",
+    padding: 16,
+    fontSize: 15,
     fontStyle: "italic",
   },
   titleText: {
@@ -273,6 +349,10 @@ const styles = StyleSheet.create({
     padding: 15,
     width: 80,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   logInButtonText: {
     fontSize: 14,
@@ -289,7 +369,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     height: 40,
-    width: screenWidth * 0.6,
+    width: screenWidth * 0.3,
     borderColor: "#bdc3c7",
     borderWidth: 1,
     fontSize: 16,
@@ -309,56 +389,141 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   registerDetailsButton: {
+    backgroundColor: "#e74c3c", // Choose a color for the Comments button
+    borderRadius: 8,
+    height: 30,
+    justifyContent: "center",
+    width: "70%",
+    alignSelf: "flex-start",
+    marginTop: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  commentButton: {
+    backgroundColor: "#2ecc71",
+    borderRadius: 8,
+    height: 70,
+    width: "20%",
+    justifyContent: "center",
+    alignSelf: "flex-end",
+    marginRight: 10, // Add margin to separate buttons
+    marginTop: -70,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  commentButtonText: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  commentIcon: {
+    alignSelf: "center",
+  },
+  bookButton: {
+    backgroundColor: "#f39c12",
+    opacity: 0.95,
+    borderRadius: 8,
+    height: 30,
+    width: "18%",
+    justifyContent: "center",
+    alignSelf: "flex-end",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  bookButtonText: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  bookIcon: {
+    alignSelf: "center",
+  },
+  showMoreButton: {
     backgroundColor: "#3498db",
     borderRadius: 8,
     height: 30,
     width: "70%",
     alignSelf: "flex-start",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  eventName: {
-    fontSize: 18,
+  showMoreButtonText: {
+    fontSize: 12,
+    color: "#fff",
     fontWeight: "bold",
-    color: "#2c3e50",
-    marginBottom: 8,
+    textAlign: "center",
   },
-  eventDescription: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 12,
+
+  postedTitle: {
+    fontSize: 15,
+    color: "#7f8c8d",
+    marginTop: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  eventDate: { fontSize: 10, fontWeight: "bold", color: "#ffffff" },
-  eventTime: { fontSize: 10, fontWeight: "bold", color: "#ffffff" },
-  eventLocation: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#3498db",
+  poster: {
+    flex: 1,
+    padding: 5,
   },
   username: {
-    fontSize: 12,
+    fontSize: 11,
     fontStyle: "italic",
     color: "#e74c3c",
     padding: 5,
     marginBottom: 5,
   },
-  postedTitle: {
-    fontSize: 12,
-    color: "#7f8c8d",
-    marginTop: 8,
+  eventName: {
+    fontSize: 25,
+    fontWeight: "bold",
+    color: "black",
+    fontStyle: "italic",
   },
-  eventTimeDateContainer: {
-    justifyContent: "space-between",
-    marginTop: 12,
+  eventDescription: {
+    marginTop: 5,
+    fontSize: 14,
+    color: "#7f8c8d",
+    marginBottom: 12,
+  },
+  eventLocation: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#3498db",
   },
   eventDate: {
     fontSize: 12,
+    marginTop: 5,
+    fontStyle: "italic",
     fontWeight: "bold",
-    color: "#333",
+    color: "#3498db",
   },
-  eventTime: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#333",
+
+  eventStartTime: {
+    fontSize: 10,
+    color: "white",
+    backgroundColor: "#3498db",
+    padding: 5,
+    width: "25%",
+  },
+  eventEndTime: {
+    marginTop: 5,
+    fontSize: 10,
+    color: "white",
+    backgroundColor: "#e74c3c",
+    padding: 5,
+    width: "25%",
   },
 });
 export default CommunityHome;

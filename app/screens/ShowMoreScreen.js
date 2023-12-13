@@ -127,6 +127,9 @@ const ShowMoreScreen = ({ navigation, route }) => {
     fetchData();
     fetchCommentData();
   };
+  const handleGoBack = () => {
+    navigation.navigate("HomeScreen"); // Replace "ScreenName" with the actual screen name you want to navigate to
+  };
 
   const handleAddComment = async () => {
     if (!newComment.trim()) {
@@ -175,7 +178,6 @@ const ShowMoreScreen = ({ navigation, route }) => {
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
         <View style={styles.searchContainer}>
-          <TextInput placeholder="Search..." style={styles.searchBar} />
           {!isAuthenticated && (
             <TouchableOpacity
               onPress={handleLoginPress}
@@ -186,6 +188,11 @@ const ShowMoreScreen = ({ navigation, route }) => {
           )}
         </View>
       </View>
+
+      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+        <Text style={styles.backButtonText}>{"< Back"}</Text>
+      </TouchableOpacity>
+
       <View style={styles.flatListContainer}>
         <FlatList
           refreshControl={
@@ -203,44 +210,51 @@ const ShowMoreScreen = ({ navigation, route }) => {
                 <Image source={{ uri: item.imageUrl }} style={styles.image} />
               )}
 
-              <Text style={styles.eventLocation}>{item.eventLocation}</Text>
-              <Text style={styles.eventDate}>Date: {item.eventDate}</Text>
-              <Text style={styles.eventDescription}>
-                {item.eventDescription}
-              </Text>
-              <View style={styles.timeContainer}>
-                <Text style={styles.eventStartTime}>
-                  Start: {item.eventStartTime}
+              <View style={styles.detailsContainer}>
+                <Text style={styles.eventLocation}>{item.eventLocation}</Text>
+                <Text style={styles.eventDate}>Date: {item.eventDate}</Text>
+                <Text style={styles.eventDescription}>
+                  {item.eventDescription}
                 </Text>
-                <Text style={styles.eventEndTime}>
-                  End: {item.eventEndTime}
-                </Text>
-              </View>
-              <Text style={styles.eventStatus}>
-                Event status: {item.eventStatus}
-              </Text>
-              <Text style={styles.regStatus}>
-                Registration status: {item.registrationStatus}
-              </Text>
-              <Text style={styles.regDeadline}>
-                Registration deadline: {item.registrationDeadline}
-              </Text>
 
-              <Text style={styles.attendeeCount}>
-                Attendee count: {item.attendeeCount}
-              </Text>
+                <View style={styles.timeContainer}>
+                  <Text style={styles.eventStartTime}>
+                    Start: {item.eventStartTime}
+                  </Text>
+                  <Text style={styles.eventEndTime}>
+                    End: {item.eventEndTime}
+                  </Text>
+                </View>
 
-              <View style={styles.organiserContainer}>
-                <Text style={styles.organizerName}>
-                  Name of organiser: {item.organizerName}
+                <Text style={styles.eventStatus}>
+                  Event status: {item.eventStatus}
                 </Text>
-                <Text style={styles.organizerContact}>
-                  Contact {item.organizerName}: {item.organizerContact}
+                <Text style={styles.regStatus}>
+                  Registration status: {item.registrationStatus}
                 </Text>
-                <Text style={styles.organizerSocialMedia}>
-                  Find {item.organizerName} on social media:
-                  {item.organizerSocialMedia}
+                <Text style={styles.regDeadline}>
+                  Registration deadline: {item.registrationDeadline}
                 </Text>
+
+                <Text style={styles.attendeeCount}>
+                  Attendee count: {item.attendeeCount}
+                </Text>
+
+                <View style={styles.organiserContainer}>
+                  <Text style={styles.organizerName}>
+                    Name of organizer: {item.organizerName}
+                  </Text>
+                  <Text style={styles.organizerContact}>
+                    Contact {item.organizerName}: {item.organizerContact}
+                  </Text>
+                  <Text style={styles.organizerSocialMedia}>
+                    Find {item.organizerName} on social media:{" "}
+                    {item.organizerSocialMedia}
+                  </Text>
+                </View>
+
+                <Text style={styles.county}>County: {item.county}</Text>
+                <Text style={styles.village}>Village: {item.village}</Text>
               </View>
             </View>
           )}
@@ -263,6 +277,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ddd", // Add a subtle border
     backgroundColor: "#3498db", // Update header background color
+  },
+  detailsContainer: {
+    marginTop: 10,
+  },
+  backButton: {
+    marginBottom: 16,
+    padding: 20,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: "#3498db",
   },
   line: {
     height: 2, // Adjust the thickness of the line
@@ -288,56 +313,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  commentButton: {
-    backgroundColor: "#2ecc71",
-    borderRadius: 8,
-    height: 30,
-    width: "40%",
-    justifyContent: "center",
-    marginRight: 10, // Add margin to separate buttons
-    marginTop: 10,
-  },
-  commentButtonContainer: {
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  eventCommentInput: {
-    height: 50,
-    borderRadius: 1,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    marginTop: 10,
-  },
-  commentButtonText: {
-    fontSize: 12,
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  commentIcon: {
-    alignSelf: "center",
-  },
-  showMoreButton: {
-    backgroundColor: "#e74c3c", // Choose a color for the Comments button
-    borderRadius: 8,
-    height: 30,
-    justifyContent: "center",
-    width: "70%",
-    alignSelf: "flex-start",
-    marginTop: 10,
-  },
-  showMoreButtonText: {
-    fontSize: 12,
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  trendText: {
-    color: "#e74c3c",
-    padding: 16,
-    fontSize: 15,
-    fontStyle: "italic",
-  },
+
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
@@ -356,23 +332,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  searchBar: {
-    backgroundColor: "#ecf0f1",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    height: 40,
-    width: screenWidth * 0.6,
-    borderColor: "#bdc3c7",
-    borderWidth: 1,
-    fontSize: 16,
-    color: "#2c3e50",
-    marginRight: 10,
-  },
+
   image: {
     width: "100%", // Take the full width of the container
     height: 200, // Set a fixed height or adjust as needed
@@ -486,6 +446,145 @@ const styles = StyleSheet.create({
   commentContent: {
     fontSize: 10,
     color: "#555",
+  },
+
+  eventLocation: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#3498db",
+  },
+  eventDate: {
+    fontSize: 12,
+    marginTop: 5,
+    fontStyle: "italic",
+    fontWeight: "bold",
+    color: "#3498db",
+  },
+  eventDescription: {
+    marginTop: 5,
+    fontSize: 14,
+    color: "#7f8c8d",
+    marginBottom: 12,
+  },
+  timeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 12,
+  },
+  eventStartTime: {
+    fontSize: 10,
+    color: "white",
+    backgroundColor: "#3498db",
+    padding: 5,
+    width: "45%",
+    borderRadius: 8,
+  },
+  eventEndTime: {
+    fontSize: 10,
+    color: "white",
+    backgroundColor: "#e74c3c",
+    padding: 5,
+    width: "45%",
+    borderRadius: 8,
+  },
+  eventStatus: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000", // Black text color
+    backgroundColor: "#fff", // White background
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+
+  regStatus: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+
+  regDeadline: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+
+  attendeeCount: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+
+  organiserContainer: {
+    marginTop: 16,
+  },
+
+  organizerName: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+
+  organizerContact: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+
+  organizerSocialMedia: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+
+  county: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+
+  village: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 16,
+    marginBottom: 8,
   },
 });
 
