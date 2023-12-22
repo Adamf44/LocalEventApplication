@@ -32,7 +32,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const screenWidth = Dimensions.get("window").width;
 
-// ... Import necessary modules ...
 const ShowMoreScreen = ({ navigation, route }) => {
   const [event, setEvent] = useState([]);
   const [comments, setComments] = useState([]);
@@ -111,7 +110,7 @@ const ShowMoreScreen = ({ navigation, route }) => {
     setIsRefreshing(true);
     try {
       const eventDoc = doc(db, "Events", eventName);
-      const eventSnap = await getDoc(eventDoc); // Use get instead of getDocs
+      const eventSnap = await getDoc(eventDoc);
       if (eventSnap.exists()) {
         const commentsData = eventSnap.data().eventComments || [];
         setComments(commentsData);
@@ -128,7 +127,7 @@ const ShowMoreScreen = ({ navigation, route }) => {
     fetchCommentData();
   };
   const handleGoBack = () => {
-    navigation.navigate("HomeScreen"); // Replace "ScreenName" with the actual screen name you want to navigate to
+    navigation.navigate("HomeScreen", { isAuthenticated: true });
   };
 
   const handleAddComment = async () => {
@@ -142,19 +141,15 @@ const ShowMoreScreen = ({ navigation, route }) => {
 
     await updateDoc(eventRef, {
       eventComments: arrayUnion({
-        username: username, // Make sure username is defined
+        username: username,
         content: newComment.trim(),
-        // timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       }),
     });
 
-    // Refresh comments after adding a new one
     fetchCommentData();
 
     setNewComment("");
   };
-
-  // ... The rest of your code ...
 
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
@@ -164,10 +159,9 @@ const ShowMoreScreen = ({ navigation, route }) => {
       const value = await AsyncStorage.getItem("Username");
       const usernameFromAsyncStorage = value.toString();
       if (value !== null) {
-        // value previously stored
         console.log("value is " + usernameFromAsyncStorage);
-        setUsername(usernameFromAsyncStorage); // Corrected this line
-        console.log("username set to:", usernameFromAsyncStorage); // Changed from 'username' to 'usernameFromAsyncStorage'
+        setUsername(usernameFromAsyncStorage);
+        console.log("username set to:", usernameFromAsyncStorage);
       }
     } catch (e) {
       // error reading value
@@ -253,8 +247,8 @@ const ShowMoreScreen = ({ navigation, route }) => {
                   </Text>
                 </View>
 
-                <Text style={styles.county}>County: {item.county}</Text>
-                <Text style={styles.village}>Village: {item.village}</Text>
+                <Text style={styles.county}>County: {item.eventCounty}</Text>
+                <Text style={styles.village}>Village: {item.eventVillage}</Text>
               </View>
             </View>
           )}
@@ -267,7 +261,7 @@ const ShowMoreScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff", // Set background color
+    backgroundColor: "#fff",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -275,8 +269,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd", // Add a subtle border
-    backgroundColor: "#3498db", // Update header background color
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
   },
   detailsContainer: {
     marginTop: 10,
@@ -290,9 +284,9 @@ const styles = StyleSheet.create({
     color: "#3498db",
   },
   line: {
-    height: 2, // Adjust the thickness of the line
-    backgroundColor: "#3498db", // Match the background color or choose a different color
-    marginVertical: 5, // Add vertical spacing
+    height: 2,
+    backgroundColor: "#3498db",
+    marginVertical: 5,
   },
   flatListContainer: {
     flex: 1,
@@ -302,7 +296,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "#fff",
     borderColor: "#ddd",
-    borderRadius: 12, // Increase the border radius for a rounded appearance
+    borderRadius: 12,
     padding: 16,
     marginBottom: 10,
     width: screenWidth,
@@ -317,7 +311,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
 
   logInButton: {
@@ -334,10 +328,10 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: "100%", // Take the full width of the container
-    height: 200, // Set a fixed height or adjust as needed
-    borderRadius: 8, // Optional: Add borderRadius for a rounded appearance
-    marginBottom: 12, // Optional: Add margin to separate image from other details
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   registerDetailsButtonText: {
     fontSize: 12,
@@ -490,8 +484,8 @@ const styles = StyleSheet.create({
   eventStatus: {
     fontSize: 10,
     fontWeight: "bold",
-    color: "#000", // Black text color
-    backgroundColor: "#fff", // White background
+    color: "#000",
+    backgroundColor: "#fff",
     padding: 10,
     borderRadius: 8,
     marginTop: 16,

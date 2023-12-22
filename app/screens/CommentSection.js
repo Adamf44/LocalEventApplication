@@ -29,6 +29,7 @@ import {
 import { db } from "../database/config";
 import { useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -37,11 +38,26 @@ const CommentSection = ({ navigation, route }) => {
   const [comments, setComments] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const { isAuthenticated } = route.params || { isAuthenticated: false };
   const eventName = route.params?.eventName;
   const [username, setUsername] = useState("");
 
-  console.log("you are there? " + isAuthenticated);
+  const { userEmail, isAuthenticated } = route.params || {};
+
+  useEffect(() => {
+    const auth = getAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+
+      if (user && isAuthenticated && eventName) {
+        sendUserEmailToEvent(user.email);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [userEmail, eventName, isAuthenticated]);
+
+  console.log("user authed? " + isAuthenticated);
   useEffect(() => {
     getData();
     console.log("eventName:", eventName);
@@ -118,7 +134,7 @@ const CommentSection = ({ navigation, route }) => {
         setComments(commentsData);
       }
     } catch (error) {
-      console.error("Error fetching comment data:", error);
+      console.error("Error comments:", error);
     } finally {
       setIsRefreshing(false);
     }
@@ -144,7 +160,6 @@ const CommentSection = ({ navigation, route }) => {
       }),
     });
 
-    // Refresh comments after adding a new one
     fetchCommentData();
 
     setNewComment("");
@@ -155,7 +170,7 @@ const CommentSection = ({ navigation, route }) => {
   };
 
   const handleGoBack = () => {
-    navigation.navigate("HomeScreen"); // Replace "ScreenName" with the actual screen name you want to navigate to
+    navigation.navigate("HomeScreen");
   };
 
   const getData = async () => {
@@ -220,7 +235,7 @@ const CommentSection = ({ navigation, route }) => {
           renderItem={({ item, index }) => (
             <View key={index} style={styles.commentContainer}>
               <View style={styles.commentHeader}>
-                <Text style={styles.commentUsername}>{item.username}:</Text>
+                <Text style={styles.commentUsername}>{username}:</Text>
               </View>
               <View style={styles.commentContent}>
                 <Text>{item.content}</Text>
@@ -251,7 +266,7 @@ const CommentSection = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff", // Background color for the screen
+    backgroundColor: "#ffffff",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -259,13 +274,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd", // Add a subtle border
-    backgroundColor: "#3498db", // Update header background color
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
   },
   line: {
-    height: 2, // Adjust the thickness of the line
-    backgroundColor: "#3498db", // Match the background color or choose a different color
-    marginVertical: 5, // Add vertical spacing
+    height: 2,
+    backgroundColor: "#3498db",
+    marginVertical: 5,
   },
   flatListContainer: {
     flex: 1,
@@ -285,7 +300,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "#fff",
     borderColor: "#ddd",
-    borderRadius: 12, // Increase the border radius for a rounded appearance
+    borderRadius: 12,
     padding: 16,
     marginBottom: 10,
     width: screenWidth + 20,
@@ -295,7 +310,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "#fff",
     borderColor: "#ddd",
-    borderRadius: 12, // Increase the border radius for a rounded appearance
+    borderRadius: 12,
     padding: 16,
     marginBottom: 10,
     width: screenWidth * 0.9,
@@ -338,7 +353,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   showMoreButton: {
-    backgroundColor: "#e74c3c", // Choose a color for the Comments button
+    backgroundColor: "#e74c3c",
     borderRadius: 8,
     height: 30,
     justifyContent: "center",
@@ -361,7 +376,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
 
   logInButton: {
@@ -377,10 +392,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   image: {
-    width: "50%", // Take the full width of the container
-    height: 100, // Set a fixed height or adjust as needed
-    borderRadius: 8, // Optional: Add borderRadius for a rounded appearance
-    marginBottom: 12, // Optional: Add margin to separate image from other details
+    width: "50%",
+    height: 100,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   eventName: {
     fontSize: 25,
@@ -405,7 +420,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333333", // Text color
+    color: "#333333",
   },
   eventLocation: {
     fontSize: 18,

@@ -15,19 +15,18 @@ import { getDocs, query, collection, where } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { db } from "../database/config";
-import { getAuth, signOut } from "firebase/auth"; // Import signOut from firebase/auth
+import { getAuth, signOut } from "firebase/auth";
 import { Button } from "react-native-web";
 
 const screenWidth = Dimensions.get("window").width;
 const ProfileScreen = ({ navigation, route }) => {
-  // State variables
   const [userData, setUserData] = useState(null);
   const [username, setUsername] = useState("");
   const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { isAuthenticated } = route.params || { isAuthenticated: false };
 
-  console.log("we areeee" + isAuthenticated);
+  console.log("we are authed" + isAuthenticated);
 
   function getUserAbout() {
     getDocs(
@@ -53,7 +52,6 @@ const ProfileScreen = ({ navigation, route }) => {
     });
   }
 
-  // useEffect for any initial data fetching or setup
   useEffect(() => {
     getData();
     getUserAbout();
@@ -77,7 +75,7 @@ const ProfileScreen = ({ navigation, route }) => {
     const auth = getAuth();
     try {
       await signOut(auth);
-      // Clear AsyncStorage and navigate to the login screen
+
       isAuthenticated: false;
       await AsyncStorage.removeItem("userEmail");
       navigation.navigate("HomeScreen", {});
@@ -130,7 +128,7 @@ const ProfileScreen = ({ navigation, route }) => {
         ))}
 
       {userData && userData.length === 0 && (
-        <Text style={styles.noDataText}>No user data available.</Text>
+        <Text style={styles.noDataText}>No user data</Text>
       )}
     </View>
   );
@@ -251,13 +249,13 @@ const styles = StyleSheet.create({
   },
   userProfileContainer: {
     flex: 1,
-    backgroundColor: "#fff", // Set background color
+    backgroundColor: "#fff",
     padding: 16,
   },
   usernameText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#3498db", // Set text color to match the theme
+    color: "#3498db",
     marginBottom: 16,
   },
   innerContainer: {
@@ -276,17 +274,17 @@ const styles = StyleSheet.create({
   fullName: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#2c3e50", // Set text color to match the theme
+    color: "#2c3e50",
     marginBottom: 8,
   },
   userBio: {
     fontSize: 14,
-    color: "#7f8c8d", // Set text color to match the theme
+    color: "#7f8c8d",
     marginBottom: 8,
   },
   userEmail: {
     fontSize: 14,
-    color: "#7f8c8d", // Set text color to match the theme
+    color: "#7f8c8d",
   },
 });
 

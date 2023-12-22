@@ -51,17 +51,17 @@ const AttendEvent = ({ navigation, route }) => {
 
         await updateDoc(eventDoc.ref, { attendees: attendeesArray });
 
-        console.log("User's email added to the event successfully!");
+        console.log("email added to the event");
       } else {
-        console.log("Event not found with the specified name:", eventName);
+        console.log("no event with name:", eventName);
       }
     } catch (error) {
-      console.error("Error sending user email to event:", error);
+      console.error("Erro:", error);
     }
   };
 
   const handleGoBack = () => {
-    navigation.navigate("HomeScreen"); // Replace "ScreenName" with the actual screen name you want to navigate to
+    navigation.navigate("HomeScreen");
   };
 
   return (
@@ -90,7 +90,7 @@ const AttendEvent = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff", // Set background color
+    backgroundColor: "#fff",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -99,8 +99,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd", // Add a subtle border
-    backgroundColor: "#3498db", // Update header background color
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
   },
   backButton: {
     marginBottom: 16,
@@ -113,23 +113,23 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
   screenText: {
     fontSize: 18,
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
   thankYouMessage: {
     marginTop: StatusBar.currentHeight || 100,
     fontSize: 25,
-    color: "#333", // Dark gray text color
+    color: "#333",
     textAlign: "center",
     paddingHorizontal: 20,
   },
   eventName: {
     fontWeight: "bold",
     fontSize: 25,
-    color: "#3498db", // Dark gray text color
+    color: "#3498db",
     textAlign: "center",
     paddingHorizontal: 20,
   },

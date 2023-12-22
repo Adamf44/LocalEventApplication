@@ -39,19 +39,15 @@ function LoginScreen({ navigation }) {
 
   const signInUser = async () => {
     try {
-      // Form validation logic (add your own validation rules)
       if (!email || !password) {
         Alert.alert("Error", "Both email and password are required.");
         return;
       }
       const auth = getAuth();
-      // Sign in user with email and password
       await signInWithEmailAndPassword(auth, email, password);
 
-      // If successful, save email to AsyncStorage
       await AsyncStorage.setItem("userEmail", email);
 
-      // If successful, navigate to HomeScreen or perform other actions
       console.log("Authentication succeeded, " + email);
 
       navigation.navigate("HomeScreen", {
@@ -59,7 +55,6 @@ function LoginScreen({ navigation }) {
         isAuthenticated: true,
       });
     } catch (error) {
-      // Handle specific error messages here
       console.error("Error signing in: ", error.message);
       Alert.alert("Authentication Failed", "Invalid email or password");
     }

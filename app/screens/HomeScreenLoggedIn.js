@@ -54,14 +54,12 @@ const HomeScreenLoggedIn = ({ navigation }) => {
 
   useEffect(() => {
     fetchData();
-  }, []); // Run once on component mount
+  }, []);
 
   const fetchData = async () => {
-    // Set isRefreshing to true when starting to fetch data
     setIsRefreshing(true);
 
     try {
-      // Fetch data from your data source (Firebase, API, etc.)
       const querySnapshot = await getDocs(collection(db, "Events"));
       let events = [];
       querySnapshot.forEach((doc) => {
@@ -91,7 +89,6 @@ const HomeScreenLoggedIn = ({ navigation }) => {
         });
       });
 
-      // Set the new data and set isRefreshing to false when data is fetched
       setEvent(events);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -101,12 +98,10 @@ const HomeScreenLoggedIn = ({ navigation }) => {
   };
 
   const handleRefresh = () => {
-    // Pull-down refresh triggers fetchData function
     fetchData();
   };
 
   useEffect(() => {
-    // Fetch data when the component is mounted
     const fetchData = async () => {
       const querySnapshot = await getDocs(collection(db, "Events"));
       let events = [];
@@ -138,12 +133,10 @@ const HomeScreenLoggedIn = ({ navigation }) => {
       setEvent(events);
     };
 
-    fetchData(); // Call the async function inside useEffect
-
+    fetchData();
     return () => {};
-  }, []); // The empty dependency array ensures the effect runs once after the initial render
+  }, []);
 
-  //when user clicks log in
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
@@ -224,7 +217,7 @@ const HomeScreenLoggedIn = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff", // Set background color
+    backgroundColor: "#fff",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -232,13 +225,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd", // Add a subtle border
-    backgroundColor: "#3498db", // Update header background color
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
   },
   line: {
     width: "100%",
     height: 1,
-    backgroundColor: "#ddd", // Update line color
+    backgroundColor: "#ddd",
   },
   flatListContainer: {
     flex: 1,
@@ -269,7 +262,7 @@ const styles = StyleSheet.create({
     width: "20%",
     justifyContent: "center",
     alignSelf: "flex-end",
-    marginRight: 10, // Add margin to separate buttons
+    marginRight: 10,
     marginTop: -70,
   },
   commentButtonText: {
@@ -282,7 +275,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   showMoreButton: {
-    backgroundColor: "#e74c3c", // Choose a color for the Comments button
+    backgroundColor: "#e74c3c",
     borderRadius: 8,
     height: 30,
     justifyContent: "center",
@@ -305,7 +298,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
 
   logInButton: {
@@ -338,10 +331,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   image: {
-    width: "100%", // Take the full width of the container
-    height: 200, // Set a fixed height or adjust as needed
-    borderRadius: 8, // Optional: Add borderRadius for a rounded appearance
-    marginBottom: 12, // Optional: Add margin to separate image from other details
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   registerDetailsButtonText: {
     fontSize: 12,

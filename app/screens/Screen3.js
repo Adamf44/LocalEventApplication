@@ -4,8 +4,7 @@ import { View, Text, StyleSheet } from "react-native";
 const Screen3 = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Hello, This is Your Screen!</Text>
-      {/* Add more components and UI elements here */}
+      <Text style={styles.text}>Hello</Text>
     </View>
   );
 };
@@ -15,14 +14,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#ffffff", // Background color for the screen
+    backgroundColor: "#ffffff",
   },
   text: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333333", // Text color
+    color: "#333333",
   },
-  // Add more styles as needed
 });
 
 export default Screen3;

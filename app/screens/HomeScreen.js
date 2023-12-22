@@ -59,7 +59,7 @@ const HomeScreen = ({ navigation, route }) => {
   const { userEmail, setUserEmail } = route.params || {};
   const { isAuthenticated = false } = route.params || {};
 
-  console.log("we areeee" + isAuthenticated);
+  console.log("we are authed" + isAuthenticated);
 
   useEffect(() => {
     fetchData();
@@ -67,20 +67,15 @@ const HomeScreen = ({ navigation, route }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      // Check the authentication status here and perform the necessary actions
       if (isAuthenticated === undefined || isAuthenticated === false) {
-        // User is not authenticated, handle the logic (e.g., show login button)
-        // ...
       }
     }, [isAuthenticated])
   );
 
   const fetchData = async () => {
-    // Set isRefreshing to true when starting to fetch data
     setIsRefreshing(true);
 
     try {
-      // Fetch data from your data source (Firebase, API, etc.)
       const querySnapshot = await getDocs(collection(db, "Events"));
       let events = [];
       querySnapshot.forEach((doc) => {
@@ -92,6 +87,8 @@ const HomeScreen = ({ navigation, route }) => {
           eventStartTime,
           eventEndTime,
           eventLocation,
+          eventCounty,
+          eventVillage,
           username,
           imageUrl,
         } = doc.data();
@@ -104,12 +101,13 @@ const HomeScreen = ({ navigation, route }) => {
           eventStartTime,
           eventEndTime,
           eventLocation,
+          eventCounty,
+          eventVillage,
           username,
           imageUrl,
         });
       });
 
-      // Set the new data and set isRefreshing to false when data is fetched
       setEvent(events);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -119,34 +117,19 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   const handleRefresh = () => {
-    // Pull-down refresh triggers fetchData function
     fetchData();
   };
 
   useEffect(() => {
-    // Fetch data when the component is mounted
     const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, "Events"));
-      let events = [];
+      setIsRefreshing(true);
 
-      querySnapshot.forEach((doc) => {
-        const {
-          eventName,
-          category,
-          eventDate,
-          eventDescription,
-          eventStartTime,
-          eventEndTime,
-          eventLocation,
-          username,
-          imageUrl,
-          communityName, // Add communityName to destructure
-        } = doc.data();
+      try {
+        const querySnapshot = await getDocs(collection(db, "Events"));
+        let events = [];
 
-        // Check if the event has a communityName attribute
-        if (!communityName) {
-          events.push({
-            id: doc.id,
+        querySnapshot.forEach((doc) => {
+          const {
             eventName,
             category,
             eventDate,
@@ -154,21 +137,44 @@ const HomeScreen = ({ navigation, route }) => {
             eventStartTime,
             eventEndTime,
             eventLocation,
+            eventCounty,
+            eventVillage,
             username,
             imageUrl,
-          });
-        }
-      });
+            communityName,
+          } = doc.data();
 
-      setEvent(events);
+          if (!communityName) {
+            events.push({
+              id: doc.id,
+              eventName,
+              category,
+              eventDate,
+              eventDescription,
+              eventStartTime,
+              eventEndTime,
+              eventLocation,
+              eventCounty,
+              eventVillage,
+              username,
+              imageUrl,
+            });
+          }
+        });
+
+        setEvent(events);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsRefreshing(false);
+      }
     };
 
-    fetchData(); // Call the async function inside useEffect
+    fetchData();
 
     return () => {};
-  }, []); // The empty dependency array ensures the effect runs once after the initial render
+  }, []);
 
-  //when user clicks log in
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
@@ -180,14 +186,11 @@ const HomeScreen = ({ navigation, route }) => {
       if (eventDoc.exists()) {
         let { bookmarkedBy } = eventDoc.data();
 
-        // Ensure bookmarkedBy is initialized as an empty array if it doesn't exist
         if (!bookmarkedBy) {
           bookmarkedBy = [];
         }
 
-        // Check if userEmail is already in the bookmarkedBy array
         if (!bookmarkedBy.includes(userEmail)) {
-          // If not, update the document with userEmail added to bookmarkedBy
           await updateDoc(eventRef, {
             bookmarkedBy: arrayUnion(userEmail),
           });
@@ -226,14 +229,12 @@ const HomeScreen = ({ navigation, route }) => {
           const attendeesArray = eventDoc.data().attendees || [];
 
           if (!attendeesArray.includes(userEmail)) {
-            // User's email is not in the attendees array, navigate to AttendEvent
             navigation.navigate("AttendEvent", {
               userEmail,
               eventName,
               isAuthenticated,
             });
           } else {
-            // User's email is already in the attendees array, show a message
             Alert.alert(
               "Already Registered",
               "You have already registered for this event."
@@ -249,11 +250,10 @@ const HomeScreen = ({ navigation, route }) => {
   const handleComment = (eventName) => {
     navigation.navigate("CommentSection", {
       eventName,
+      userEmail,
       isAuthenticated,
     });
   };
-
-  //when user clicks log in
 
   return (
     <View style={styles.container}>
@@ -302,7 +302,11 @@ const HomeScreen = ({ navigation, route }) => {
               {item.imageUrl && (
                 <Image source={{ uri: item.imageUrl }} style={styles.image} />
               )}
-              <Text style={styles.eventLocation}>{item.eventLocation}</Text>
+              <Text style={styles.eventLocation}>
+                C.o. {item.eventCounty}, {item.eventVillage}.
+              </Text>
+              <Text style={styles.eventLocation}></Text>
+
               <Text style={styles.eventDate}>{item.eventDate}</Text>
               <Text style={styles.eventDescription}>
                 {item.eventDescription}
@@ -358,7 +362,7 @@ const HomeScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff", // Set background color
+    backgroundColor: "#fff",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -367,13 +371,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd", // Add a subtle border
-    backgroundColor: "#3498db", // Update header background color
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
   },
   line: {
-    height: 2, // Adjust the thickness of the line
-    backgroundColor: "#3498db", // Match the background color or choose a different color
-    marginVertical: 5, // Add vertical spacing
+    height: 2,
+    backgroundColor: "#3498db",
+    marginVertical: 5,
   },
   flatListContainer: {
     flex: 1,
@@ -413,7 +417,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
 
   logInButton: {
@@ -450,10 +454,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   image: {
-    width: "100%", // Take the full width of the container
-    height: 200, // Set a fixed height or adjust as needed
-    borderRadius: 8, // Optional: Add borderRadius for a rounded appearance
-    marginBottom: 12, // Optional: Add margin to separate image from other details
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   registerDetailsButtonText: {
     fontSize: 12,
@@ -462,7 +466,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   registerDetailsButton: {
-    backgroundColor: "#e74c3c", // Choose a color for the Comments button
+    backgroundColor: "#e74c3c",
     borderRadius: 8,
     height: 30,
     justifyContent: "center",
@@ -481,7 +485,7 @@ const styles = StyleSheet.create({
     width: "20%",
     justifyContent: "center",
     alignSelf: "flex-end",
-    marginRight: 10, // Add margin to separate buttons
+    marginRight: 10,
     marginTop: -70,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

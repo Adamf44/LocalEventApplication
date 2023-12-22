@@ -23,7 +23,6 @@ const EventBookmarks = ({ navigation, route }) => {
   const [bookmarkedEvents, setBookmarkedEvents] = useState([]);
 
   useEffect(() => {
-    // Fetch bookmarked events for the current user
     const fetchBookmarkedEvents = async () => {
       try {
         const querySnapshot = await getDocs(
@@ -33,7 +32,6 @@ const EventBookmarks = ({ navigation, route }) => {
           )
         );
 
-        // Check if the docs array exists before calling map
         if (querySnapshot.docs) {
           const events = querySnapshot.docs.map((doc) => ({
             id: doc.id,
@@ -42,7 +40,7 @@ const EventBookmarks = ({ navigation, route }) => {
 
           setBookmarkedEvents(events);
         } else {
-          setBookmarkedEvents([]); // Set an empty array if there are no bookmarked events
+          setBookmarkedEvents([]);
         }
       } catch (error) {
         console.error("Error fetching bookmarked events:", error.message);
@@ -58,7 +56,7 @@ const EventBookmarks = ({ navigation, route }) => {
     navigation.navigate("ShowMoreScreen", { eventName });
   };
   const handleGoBack = () => {
-    navigation.navigate("ProfileScreen"); // Replace "ScreenName" with the actual screen name you want to navigate to
+    navigation.navigate("ProfileScreen");
   };
 
   const renderEventItem = ({ item }) => (
@@ -98,7 +96,7 @@ const EventBookmarks = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff", // Set background color
+    backgroundColor: "#fff",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -107,8 +105,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd", // Add a subtle border
-    backgroundColor: "#3498db", // Update header background color
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
   },
   backButton: {
     marginBottom: 16,
@@ -119,9 +117,9 @@ const styles = StyleSheet.create({
     color: "#3498db",
   },
   line: {
-    height: 2, // Adjust the thickness of the line
-    backgroundColor: "#3498db", // Match the background color or choose a different color
-    marginVertical: 5, // Add vertical spacing
+    height: 2,
+    backgroundColor: "#3498db",
+    marginVertical: 5,
   },
   flatListContainer: {
     flex: 1,
@@ -145,12 +143,12 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
   header: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
   eventCardHead: {
     flex: 1,

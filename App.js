@@ -137,10 +137,6 @@ const App = () => {
   const [isAuthenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Clear 'Username' from AsyncStorage when the component mounts
-    // clearAsyncStorage();
-
-    // Check authentication state when the component mounts
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -152,11 +148,8 @@ const App = () => {
       }
     });
 
-    // Clean up the listener when the component unmounts
     return () => unsubscribe();
   }, []);
-
-  // Function to clear the specific item ('Username') from AsyncStorage
 
   return (
     <NavigationContainer>

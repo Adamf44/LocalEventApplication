@@ -28,9 +28,8 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useAuth } from "firebase/auth";
 import { Alert } from "react-native";
 
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation from @react-navigation/native
+import { useNavigation } from "@react-navigation/native";
 
-// ... (other imports)
 const CommunitiesTab = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -39,23 +38,20 @@ const CommunitiesTab = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [userCommunities, setUserCommunities] = useState([]);
 
-  const isAuthenticated = !!currentUser; // Define isAuthenticated based on currentUser
+  const isAuthenticated = !!currentUser;
 
   useEffect(() => {
-    // Get the current user
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUser(user);
-        fetchUserCommunities(user.email); // Pass the email to fetchUserCommunities
+        fetchUserCommunities(user.email);
       }
     });
 
-    // Clean up the subscription when the component unmounts
     return () => unsubscribe();
   }, []);
 
   const handleRefresh = () => {
-    // Pull-down refresh triggers fetchData function
     if (currentUser) {
       fetchUserCommunities(currentUser.email);
     }
@@ -81,14 +77,13 @@ const CommunitiesTab = () => {
 
       setUserCommunities(communities);
     } catch (error) {
-      console.error("Error fetching user communities: ", error.message);
+      console.error("Error: ", error.message);
     } finally {
       setIsRefreshing(false);
     }
   };
 
   if (!currentUser) {
-    // Loading or redirect to login
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
   return (
@@ -103,19 +98,16 @@ const CommunitiesTab = () => {
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => {
-              // Navigate to the details screen with the community details
               navigation.navigate("CommunityHome", {
                 community: item.communityName,
-                userEmail: currentUser.email, // Use currentUser.email
-                isAuthenticated, // Assuming 'isAuthenticated' is defined somewhere
+                userEmail: currentUser.email,
+                isAuthenticated,
               });
             }}
           >
             <View style={styles.card}>
               <Text style={styles.cardText}>{item.communityName}</Text>
               <Text style={styles.cardDesc}>{item.description}</Text>
-
-              {/* Display other community details */}
             </View>
           </TouchableOpacity>
         )}
@@ -130,21 +122,19 @@ const CreateTab = () => {
   const auth = getAuth();
   const [currentUser, setCurrentUser] = useState(null);
 
-  const isAuthenticated = !!currentUser; // Define isAuthenticated based on currentUser
+  const isAuthenticated = !!currentUser;
 
-  const navigation = useNavigation(); // Add this line to get the navigation object
+  const navigation = useNavigation();
 
   useEffect(() => {
-    // Get the current user
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUser(user);
       } else {
-        setCurrentUser(null); // Set user to null if not authenticated
+        setCurrentUser(null);
       }
     });
 
-    // Clean up the subscription when the component unmounts
     return () => unsubscribe();
   }, []);
 
@@ -159,17 +149,15 @@ const CreateTab = () => {
     }
     try {
       if (currentUser) {
-        // Add community data to Firestore
         const docRef = await addDoc(collection(db, "Communities"), {
           communityName,
           description,
           visibility,
-          userEmail: currentUser.email, // Use currentUser.email
+          userEmail: currentUser.email,
         });
 
         console.log("Community created with ID: ", docRef.id);
 
-        // Clear the form after submission
         setCommunityName("");
         setDescription("");
         setVisibility("");
@@ -213,7 +201,7 @@ const CreateTab = () => {
   );
 };
 
-const Tab = createBottomTabNavigator(); // Use createMaterialTopTabNavigator
+const Tab = createBottomTabNavigator();
 
 const CommunityScreen = () => {
   return (
@@ -227,11 +215,11 @@ const CommunityScreen = () => {
         },
         tabBarStyle: {
           backgroundColor: "#ffffff",
-          height: 100, // Adjust the height as needed
+          height: 100,
         },
         tabBarIndicatorStyle: {
-          backgroundColor: "red", // Color of the indicator
-          height: 0, // Height of the indicator (set to 0 to hide it)
+          backgroundColor: "red",
+          height: 0,
         },
       }}
     >
@@ -244,13 +232,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff", // Update background color
+    backgroundColor: "#fff",
   },
   heading: {
     fontSize: 25,
     fontWeight: "bold",
     marginBottom: 20,
-    color: "black", // Update text color
+    color: "black",
   },
   createButton: {
     backgroundColor: "#3498db",
@@ -271,7 +259,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    backgroundColor: "#5DA5D4", // Update background color
+    backgroundColor: "#5DA5D4",
   },
   cardText: {
     fontSize: 25,

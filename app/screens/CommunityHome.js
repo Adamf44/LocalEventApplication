@@ -29,7 +29,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../database/config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation from @react-navigation/native
+import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
 
 const screenWidth = Dimensions.get("window").width;
@@ -48,7 +48,7 @@ const CommunityHome = () => {
   const [eventPic, setEventPic] = useState(".");
   const { community } = route.params || {};
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const navigation = useNavigation(); // Hook to get navigation object
+  const navigation = useNavigation();
   const { userEmail, isAuthenticated } = route.params || {};
 
   const fetchData = async () => {
@@ -94,10 +94,10 @@ const CommunityHome = () => {
 
         setEvent(events);
       } else {
-        console.warn("Community name is undefined.");
+        console.log("Community name is undefined.");
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error:", error);
     } finally {
       setIsRefreshing(false);
     }
@@ -108,16 +108,13 @@ const CommunityHome = () => {
   }, [community]);
 
   const handleRefresh = () => {
-    // Pull-down refresh triggers fetchData function
     fetchData();
   };
 
   const handleAddEvent = () => {
-    // Navigate to the screen where users can add events
     navigation.navigate("CreateCommunityEvent", { communityName: community });
   };
 
-  //when user clicks log in
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
@@ -138,14 +135,12 @@ const CommunityHome = () => {
           const attendeesArray = eventDoc.data().attendees || [];
 
           if (!attendeesArray.includes(userEmail)) {
-            // User's email is not in the attendees array, navigate to AttendEvent
             navigation.navigate("AttendEvent", {
               userEmail,
               eventName,
               isAuthenticated,
             });
           } else {
-            // User's email is already in the attendees array, show a message
             Alert.alert(
               "Already Registered",
               "You have already registered for this event."
@@ -165,6 +160,10 @@ const CommunityHome = () => {
     });
   };
 
+  const handleGoBack = () => {
+    navigation.navigate("Community");
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.appHead}>
@@ -173,6 +172,10 @@ const CommunityHome = () => {
           <Text style={styles.addButtonText}>Add Event</Text>
         </TouchableOpacity>
       </View>
+
+      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
+        <Text style={styles.backButtonText}>{"< Back"}</Text>
+      </TouchableOpacity>
       <View style={styles.flatListContainer}>
         <FlatList
           refreshControl={
@@ -255,7 +258,7 @@ const CommunityHome = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#3D464A", // Set background color
+    backgroundColor: "#3D464A",
     marginTop: StatusBar.currentHeight || 40,
   },
   title: {
@@ -263,6 +266,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#3498db",
     textAlign: "center",
+  },
+  backButton: {
+    marginBottom: 16,
+    padding: 20,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: "#3498db",
   },
   buttonContainer: {
     flexDirection: "column",
@@ -294,13 +305,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd", // Add a subtle border
-    backgroundColor: "#3498db", // Update header background color
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
   },
   line: {
-    height: 2, // Adjust the thickness of the line
-    backgroundColor: "#3498db", // Match the background color or choose a different color
-    marginVertical: 5, // Add vertical spacing
+    height: 2,
+    backgroundColor: "#3498db",
+    marginVertical: 5,
   },
   flatListContainer: {
     flex: 1,
@@ -340,7 +351,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
 
   logInButton: {
@@ -377,10 +388,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   image: {
-    width: "100%", // Take the full width of the container
-    height: 200, // Set a fixed height or adjust as needed
-    borderRadius: 8, // Optional: Add borderRadius for a rounded appearance
-    marginBottom: 12, // Optional: Add margin to separate image from other details
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   registerDetailsButtonText: {
     fontSize: 12,
@@ -389,7 +400,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   registerDetailsButton: {
-    backgroundColor: "#e74c3c", // Choose a color for the Comments button
+    backgroundColor: "#e74c3c",
     borderRadius: 8,
     height: 30,
     justifyContent: "center",
@@ -408,7 +419,7 @@ const styles = StyleSheet.create({
     width: "20%",
     justifyContent: "center",
     alignSelf: "flex-end",
-    marginRight: 10, // Add margin to separate buttons
+    marginRight: 10,
     marginTop: -70,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },

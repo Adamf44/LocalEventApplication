@@ -44,35 +44,26 @@ const CreateEventScreen = ({ navigation, route }) => {
   const [eventCounty, setEventCounty] = useState("");
   const [eventVillage, setEventVillage] = useState("");
 
-  //  const { isAuthenticated = false } = route.params || {};
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     getData();
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // If user is authenticated, set isAuthenticated to true
-      // Otherwise, set it to false
       setIsAuthenticated(!!user);
     });
 
-    // Clean up the subscription when the component unmounts
     return () => unsubscribe();
-  }, []); // The empty dependency array ensures that this effect runs only once when the component mounts
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
-      // Check the authentication status here and perform the necessary actions
       if (!isAuthenticated) {
-        // User is not authenticated, handle the logic (e.g., show login button)
-        // ...
       }
     }, [isAuthenticated])
   );
 
   async function pickImage() {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -86,7 +77,7 @@ const CreateEventScreen = ({ navigation, route }) => {
       const storage = getStorage();
       const storageRef = ref(storage, "event_images/" + eventName);
       uploadBytes(storageRef, blob).then((snapshot) => {
-        console.log("Uploaded a blob!");
+        console.log("Uploaded an image");
       });
       setEventImage(result.uri);
     }
@@ -168,7 +159,7 @@ const CreateEventScreen = ({ navigation, route }) => {
       setEventCounty("");
       setEventVillage("");
 
-      Alert.alert("Success", "You have successfully created an event!", [
+      Alert.alert("Success", "Successfully created an event!", [
         {
           text: "OK",
           onPress: () => navigation.navigate("HomeScreen"),
@@ -193,7 +184,6 @@ const CreateEventScreen = ({ navigation, route }) => {
     }
   };
 
-  //when user clicks log in
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
@@ -289,9 +279,7 @@ const CreateEventScreen = ({ navigation, route }) => {
           onChangeText={(text) => setOrganizerSocialMedia(text)}
           placeholder="Organizer Social Media"
         />
-        {/* Add other organizer fields as needed */}
 
-        {/* Tags Section */}
         <Text style={styles.sectionTitle}>Event Tags</Text>
         <TextInput
           style={styles.input}
@@ -306,7 +294,12 @@ const CreateEventScreen = ({ navigation, route }) => {
         {eventImage && (
           <Image
             source={{ uri: eventImage }}
-            style={{ width: 200, height: 200, marginBottom: 10 }}
+            style={{
+              width: 200,
+              height: 200,
+              marginBottom: 10,
+              alignSelf: "center",
+            }}
           />
         )}
 
@@ -333,8 +326,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#ddd", // Add a subtle border
-    backgroundColor: "#3498db", // Update header background color
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
   },
   contentContainer: {
     flexGrow: 1,
@@ -344,7 +337,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff", // Set text color to white
+    color: "#fff",
   },
 
   logInButton: {

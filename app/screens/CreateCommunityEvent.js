@@ -49,10 +49,9 @@ const CreateCommunityEvent = ({ navigation }) => {
 
   useEffect(() => {
     getData();
-  }, []); // The empty dependency array ensures that this effect runs only once when the component mounts
+  }, []);
 
   async function pickImage() {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -66,7 +65,7 @@ const CreateCommunityEvent = ({ navigation }) => {
       const storage = getStorage();
       const storageRef = ref(storage, "event_images/" + eventName);
       uploadBytes(storageRef, blob).then((snapshot) => {
-        console.log("Uploaded a blob!");
+        console.log("Uploaded an image");
       });
       setEventImage(result.uri);
     }
@@ -120,7 +119,7 @@ const CreateCommunityEvent = ({ navigation }) => {
 
       await setDoc(doc(db, "Events", eventName), data);
 
-      Alert.alert("Success", "You have successfully created an event!", [
+      Alert.alert("Success", "Successfully created an event!", [
         {
           text: "OK",
           onPress: () => navigation.navigate("HomeScreen"),
@@ -165,7 +164,6 @@ const CreateCommunityEvent = ({ navigation }) => {
           numberOfLines={3}
         />
 
-        {/* Date and Location Group */}
         <View style={styles.inputGroup}>
           <TextInput
             style={styles.input}
@@ -181,7 +179,6 @@ const CreateCommunityEvent = ({ navigation }) => {
           />
         </View>
 
-        {/* Event Time Group */}
         <View style={styles.inputGroup}>
           <TextInput
             style={styles.input}
@@ -230,26 +227,26 @@ const styles = StyleSheet.create({
   nameInput: {
     width: "80%",
     height: 50,
-    borderWidth: 3, // Increased border width for emphasis
-    borderColor: "grey", // Red border color for emphasis
+    borderWidth: 3,
+    borderColor: "grey",
     paddingHorizontal: 15,
     textAlign: "center",
     borderRadius: 10,
     color: "#2c3e50",
     fontSize: 16,
-    marginBottom: 20, // Increased margin for separation
+    marginBottom: 20,
   },
   descInput: {
     width: "80%",
     textAlign: "center",
     height: 50,
-    borderWidth: 3, // Increased border width for emphasis
-    borderColor: "grey", // Red border color for emphasis
+    borderWidth: 3,
+    borderColor: "grey",
     paddingHorizontal: 15,
     borderRadius: 10,
     color: "#2c3e50",
     fontSize: 16,
-    marginBottom: 20, // Increased margin for separation
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
@@ -263,13 +260,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-    width: "48%", // Adjusted width to create some space between inputs
+    width: "48%",
     height: 50,
     borderWidth: 1,
     borderColor: "#bdc3c7",
     paddingHorizontal: 15,
-    borderWidth: 3, // Increased border width for emphasis
-    borderColor: "grey", // Red border color for emphasis
+    borderWidth: 3,
+    borderColor: "grey",
     margin: 1,
     borderRadius: 10,
     color: "#2c3e50",

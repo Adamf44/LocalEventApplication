@@ -8,8 +8,8 @@ import {
   TextInput,
   Dimensions,
 } from "react-native";
-import { createUserWithEmailAndPassword } from "firebase/auth"; // Import auth functions
-import { auth, db } from "../database/config"; // Import auth and firestore
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../database/config";
 import firebase from "firebase/app";
 import { useFocusEffect } from "@react-navigation/native";
 import "firebase/firestore";
@@ -43,19 +43,16 @@ const RegisterScreen = ({ navigation }) => {
 
   const createUser = async () => {
     try {
-      // Form validation logic (add your own validation rules)
       if (!email || !username || !fullName || !userBio || !password) {
         Alert.alert("Error", "All fields are required.");
         return;
       }
       const auth = getAuth();
 
-      // Create a new user with email and password
       await createUserWithEmailAndPassword(auth, email, password);
 
       const user = auth.currentUser;
 
-      // Add additional user data to Firestore
       const userData = {
         email: user.email,
         username: username.trim(),
@@ -63,7 +60,6 @@ const RegisterScreen = ({ navigation }) => {
         fullName: fullName.trim(),
       };
 
-      // Push data to Firestore
       await setDoc(doc(db, "Users", user.uid), userData);
 
       Alert.alert("Success", "You have successfully signed up!", [
@@ -73,7 +69,6 @@ const RegisterScreen = ({ navigation }) => {
         },
       ]);
     } catch (error) {
-      // Handle specific error messages here
       console.error("Error creating user: ", error.message);
       Alert.alert("Error", "Failed to sign up. Please try again later.");
     }
@@ -144,7 +139,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   button: {
-    backgroundColor: "#b22222", // Button background color
+    backgroundColor: "#b22222",
     borderRadius: 5,
     width: screenHeight * 0.15,
     height: 40,
