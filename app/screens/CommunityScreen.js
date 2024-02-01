@@ -30,6 +30,9 @@ import { Alert } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 
+//nav log
+console.log("Community section page");
+
 const CommunitiesTab = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 

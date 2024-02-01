@@ -32,6 +32,9 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
 
+//nav log
+console.log("Community home page");
+
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 

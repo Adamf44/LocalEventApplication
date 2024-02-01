@@ -6,8 +6,33 @@ const NotificationScreen = () => {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
 
-  const sendEmail = () => {
-    //email api
+  const sendEmail = async () => {
+    const apiKey = "69a6bd85-c148adc9";
+    const domain = "sandbox847ffae525ba467ea9ac0ef34f3bab95.mailgun.org";
+    const from = "yourname@example.com";
+    const to = recipient;
+    const text = body;
+
+    try {
+      const response = await fetch(
+        `https://api.mailgun.net/v3/${domain}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Basic ${btoa(`api:${apiKey}`)}`,
+          },
+          body: `from=${from}&to=${to}&subject=${encodeURIComponent(
+            subject
+          )}&text=${encodeURIComponent(text)}`,
+        }
+      );
+
+      const responseData = await response.json();
+      console.log(responseData); // Logs the response from Mailgun
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
   };
 
   return (

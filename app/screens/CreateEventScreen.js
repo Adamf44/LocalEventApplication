@@ -20,6 +20,9 @@ import { db } from "../database/config";
 import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+//nav log
+console.log("Create event page");
+
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 

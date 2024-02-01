@@ -31,6 +31,9 @@ import { useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+//nav log
+console.log("Comment section page");
+
 const screenWidth = Dimensions.get("window").width;
 
 const CommentSection = ({ navigation, route }) => {
@@ -39,28 +42,27 @@ const CommentSection = ({ navigation, route }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [newComment, setNewComment] = useState("");
   const eventName = route.params?.eventName;
-  const [username, setUsername] = useState("");
+  const [username, setUser] = useState("");
 
   const { userEmail, isAuthenticated } = route.params || {};
 
   useEffect(() => {
     const auth = getAuth();
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
 
+      console.log("user:" + userEmail);
+
       if (user && isAuthenticated && eventName) {
-        sendUserEmailToEvent(user.email);
+        //figure out
       }
     });
 
     return () => unsubscribe();
   }, [userEmail, eventName, isAuthenticated]);
 
-  console.log("user authed? " + isAuthenticated);
   useEffect(() => {
-    getData();
-    console.log("eventName:", eventName);
+    console.log("event name:", eventName);
     if (eventName) {
       fetchData();
       fetchCommentData();
@@ -120,7 +122,6 @@ const CommentSection = ({ navigation, route }) => {
       });
 
       setEvent(info);
-      getData();
     });
   }
 
@@ -171,20 +172,6 @@ const CommentSection = ({ navigation, route }) => {
 
   const handleGoBack = () => {
     navigation.navigate("HomeScreen");
-  };
-
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem("Username");
-      const usernameFromAsyncStorage = value.toString();
-      if (value !== null) {
-        console.log("value is " + usernameFromAsyncStorage);
-        setUsername(usernameFromAsyncStorage);
-        console.log("username set to:", usernameFromAsyncStorage);
-      }
-    } catch (e) {
-      // error reading value
-    }
   };
 
   return (

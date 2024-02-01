@@ -42,6 +42,9 @@ import {
 import { db } from "../database/config";
 import { useRoute } from "@react-navigation/native";
 
+//nav log
+console.log("Homescreen page");
+
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
@@ -59,7 +62,7 @@ const HomeScreen = ({ navigation, route }) => {
   const { userEmail, setUserEmail } = route.params || {};
   const { isAuthenticated = false } = route.params || {};
 
-  console.log("we are authed" + isAuthenticated);
+  console.log("User is authenticated: " + isAuthenticated);
 
   useEffect(() => {
     fetchData();

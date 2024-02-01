@@ -30,6 +30,9 @@ import { db } from "../database/config";
 import { useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+//nav log
+console.log("Show more screen");
+
 const screenWidth = Dimensions.get("window").width;
 
 const ShowMoreScreen = ({ navigation, route }) => {

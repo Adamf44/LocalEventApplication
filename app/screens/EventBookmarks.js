@@ -16,6 +16,9 @@ import { getDocs, query, collection, where } from "firebase/firestore";
 import { db } from "../database/config";
 import Icon from "react-native-vector-icons/FontAwesome";
 
+//nav log
+console.log("Event bookmark page");
+
 const screenWidth = Dimensions.get("window").width;
 
 const EventBookmarks = ({ navigation, route }) => {

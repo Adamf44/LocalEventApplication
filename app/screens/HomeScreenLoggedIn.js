@@ -37,6 +37,9 @@ import {
 } from "firebase/firestore";
 import { db } from "../database/config";
 
+//nav log
+console.log("Homescreen login page");
+
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 

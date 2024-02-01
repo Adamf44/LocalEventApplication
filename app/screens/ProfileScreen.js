@@ -18,6 +18,9 @@ import { db } from "../database/config";
 import { getAuth, signOut } from "firebase/auth";
 import { Button } from "react-native-web";
 
+//nav log
+console.log("Profile screen");
+
 const screenWidth = Dimensions.get("window").width;
 const ProfileScreen = ({ navigation, route }) => {
   const [userData, setUserData] = useState(null);

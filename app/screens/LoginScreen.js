@@ -31,6 +31,9 @@ import { set } from "firebase/database";
 import { auth } from "../database/config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+//nav log
+console.log("Login screen");
+
 const screenHeight = Dimensions.get("window").height;
 
 function LoginScreen({ navigation }) {

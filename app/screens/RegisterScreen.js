@@ -31,6 +31,9 @@ import { useRoute } from "@react-navigation/native";
 import { set } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+//nav log
+console.log("Register screen");
+
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
