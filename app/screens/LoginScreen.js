@@ -51,7 +51,7 @@ function LoginScreen({ navigation }) {
 
       await AsyncStorage.setItem("userEmail", email);
 
-      console.log("Authentication succeeded, " + email);
+      console.log("Authentication succeeded for user: " + email);
 
       navigation.navigate("HomeScreen", {
         userEmail: email,

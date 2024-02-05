@@ -20,9 +20,6 @@ import { db } from "../database/config";
 import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-//nav log
-console.log("Create event page");
-
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
@@ -46,25 +43,19 @@ const CreateEventScreen = ({ navigation, route }) => {
   const [eventComments, setEventComments] = useState([]);
   const [eventCounty, setEventCounty] = useState("");
   const [eventVillage, setEventVillage] = useState("");
+  const { isAuthenticated = false } = route.params || {};
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  //nav log
+  console.log("Create event page");
+  console.log("User is authenticated on create event: " + isAuthenticated);
 
   useEffect(() => {
-    getData();
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsAuthenticated(!!user);
-    });
 
-    return () => unsubscribe();
+    if (isAuthenticated) {
+      console.log("authentit");
+    }
   }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!isAuthenticated) {
-      }
-    }, [isAuthenticated])
-  );
 
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -172,18 +163,6 @@ const CreateEventScreen = ({ navigation, route }) => {
       console.error("Error creating document: ", error);
       Alert.alert("Error", "Failed to create event. Please try again later.");
       console.error(error);
-    }
-  };
-
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem("Username");
-      var usernameFromAsyncStorage = value.toString();
-      if (value !== null) {
-        setUsername(usernameFromAsyncStorage);
-      }
-    } catch (e) {
-      // error reading value
     }
   };
 

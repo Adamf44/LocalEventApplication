@@ -40,9 +40,11 @@ const ShowMoreScreen = ({ navigation, route }) => {
   const [comments, setComments] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const { isAuthenticated } = route.params || { isAuthenticated: false };
+  const { isAuthenticated = false } = route.params || {};
   const eventName = route.params?.eventName;
   const [username, setUsername] = useState("");
+
+  console.log("User is authenticated on show more: " + isAuthenticated);
 
   useEffect(() => {
     getData();

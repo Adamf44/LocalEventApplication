@@ -1,38 +1,46 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   StyleSheet,
   Text,
   View,
-  TextInput,
-  TouchableOpacity,
+  Button,
+  Alert,
   Image,
   Dimensions,
+  TextInput,
+  Pressable,
+  TouchableOpacity,
+  KeyboardAvoidingView,
   FlatList,
+  SafeAreaView,
+  Touchable,
   StatusBar,
   RefreshControl,
-  Alert,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+
+import LoginScreen from "./LoginScreen";
+import { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import firebase from "firebase/app";
-import "firebase/firestore";
+import "firebase/database";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import Icon from "react-native-vector-icons/FontAwesome";
 import {
   collection,
   doc,
+  setDoc,
   getDocs,
-  get,
+  getDoc,
+  addDoc,
   updateDoc,
+  query,
   arrayUnion,
   where,
-  getDoc,
-  query,
+  or,
 } from "firebase/firestore";
 import { db } from "../database/config";
 import { useRoute } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-
-//nav log
-console.log("Comment section page");
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -44,7 +52,8 @@ const CommentSection = ({ navigation, route }) => {
   const eventName = route.params?.eventName;
   const [username, setUser] = useState("");
 
-  const { userEmail, isAuthenticated } = route.params || {};
+  //nav log
+  console.log("Comment screen");
 
   useEffect(() => {
     const auth = getAuth();

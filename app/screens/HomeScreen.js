@@ -18,7 +18,6 @@ import {
   RefreshControl,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-
 import LoginScreen from "./LoginScreen";
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -42,9 +41,6 @@ import {
 import { db } from "../database/config";
 import { useRoute } from "@react-navigation/native";
 
-//nav log
-console.log("Homescreen page");
-
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
@@ -62,22 +58,14 @@ const HomeScreen = ({ navigation, route }) => {
   const { userEmail, setUserEmail } = route.params || {};
   const { isAuthenticated = false } = route.params || {};
 
-  console.log("User is authenticated: " + isAuthenticated);
+  console.log("User is authenticated on home: " + isAuthenticated);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (isAuthenticated === undefined || isAuthenticated === false) {
-      }
-    }, [isAuthenticated])
-  );
-
   const fetchData = async () => {
     setIsRefreshing(true);
-
     try {
       const querySnapshot = await getDocs(collection(db, "Events"));
       let events = [];
@@ -92,47 +80,13 @@ const HomeScreen = ({ navigation, route }) => {
           eventLocation,
           eventCounty,
           eventVillage,
+          communityName,
           username,
           imageUrl,
         } = doc.data();
-        events.push({
-          id: doc.id,
-          eventName,
-          category,
-          eventDate,
-          eventDescription,
-          eventStartTime,
-          eventEndTime,
-          eventLocation,
-          eventCounty,
-          eventVillage,
-          username,
-          imageUrl,
-        });
-      });
-
-      setEvent(events);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleRefresh = () => {
-    fetchData();
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsRefreshing(true);
-
-      try {
-        const querySnapshot = await getDocs(collection(db, "Events"));
-        let events = [];
-
-        querySnapshot.forEach((doc) => {
-          const {
+        if (!communityName) {
+          events.push({
+            id: doc.id,
             eventName,
             category,
             eventDate,
@@ -144,39 +98,22 @@ const HomeScreen = ({ navigation, route }) => {
             eventVillage,
             username,
             imageUrl,
-            communityName,
-          } = doc.data();
+          });
+        }
+      });
 
-          if (!communityName) {
-            events.push({
-              id: doc.id,
-              eventName,
-              category,
-              eventDate,
-              eventDescription,
-              eventStartTime,
-              eventEndTime,
-              eventLocation,
-              eventCounty,
-              eventVillage,
-              username,
-              imageUrl,
-            });
-          }
-        });
+      setEvent(events);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
-        setEvent(events);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsRefreshing(false);
-      }
-    };
-
+  //handler events below
+  const handleRefresh = () => {
     fetchData();
-
-    return () => {};
-  }, []);
+  };
 
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
@@ -218,7 +155,7 @@ const HomeScreen = ({ navigation, route }) => {
 
   const handleShowMorePress = (eventName) => {
     console.log("handleShowMorePress called with eventName:", eventName);
-    navigation.navigate("ShowMoreScreen", { eventName });
+    navigation.navigate("ShowMoreScreen", { eventName, isAuthenticated });
   };
 
   const handleAttend = (userEmail, eventName) => {
@@ -358,6 +295,43 @@ const HomeScreen = ({ navigation, route }) => {
           )}
         />
       </View>
+
+      <View style={styles.navBar}>
+        <TouchableOpacity
+          style={styles.navButtons}
+          onPress={() => navigation.navigate("HomeScreen")}
+        >
+          <Text>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navButtons}
+          onPress={() => navigation.navigate("CreateEventScreen")}
+        >
+          <Text>Create</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navButtons}
+          onPress={() => navigation.navigate("CommunityScreen")}
+        >
+          <Text>Community</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navButtons}
+          onPress={() => navigation.navigate("UserHomeScreen")}
+        >
+          <Text>Hello</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navButtons}
+          onPress={() => navigation.navigate("UserHomeScreen")}
+        >
+          <Text>Hello</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -376,6 +350,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
     backgroundColor: "#3498db",
+  },
+  navBar: {
+    flexDirection: "row",
+    flex: 1,
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    bottom: 0,
+    zIndex: 999,
+    alignSelf: "center",
+    width: "100%",
+    borderTopWidth: 2,
+    borderTopColor: "black",
+  },
+  navButtons: {
+    marginVertical: 35,
+    marginHorizontal: 20,
   },
   line: {
     height: 2,

@@ -1,24 +1,46 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
-  View,
-  Text,
   StyleSheet,
+  Text,
+  View,
+  Button,
+  Alert,
+  Image,
   Dimensions,
-  StatusBar,
+  TextInput,
+  Pressable,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  FlatList,
+  SafeAreaView,
+  Touchable,
+  StatusBar,
+  RefreshControl,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+
+import LoginScreen from "./LoginScreen";
+import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import firebase from "firebase/app";
+import "firebase/database";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import Icon from "react-native-vector-icons/FontAwesome";
 import {
-  getDocs,
-  query,
   collection,
-  where,
+  doc,
+  setDoc,
+  getDocs,
+  getDoc,
+  addDoc,
   updateDoc,
+  query,
+  arrayUnion,
+  where,
+  or,
 } from "firebase/firestore";
 import { db } from "../database/config";
-
-//nav log
-console.log("Attend event page");
+import { useRoute } from "@react-navigation/native";
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
@@ -26,6 +48,9 @@ const screenHeight = Dimensions.get("window").height;
 const AttendEvent = ({ navigation, route }) => {
   const [user, setUser] = useState(null);
   const { userEmail, eventName, isAuthenticated } = route.params || {};
+
+  //nav log
+  console.log("Attend event page");
 
   useEffect(() => {
     const auth = getAuth();

@@ -11,151 +11,85 @@ import NotificationScreen from "./app/screens/NotificationScreen";
 import RegisterScreen from "./app/screens/RegisterScreen";
 import ProfileScreen from "./app/screens/ProfileScreen";
 import CommunityScreen from "./app/screens/CommunityScreen";
-import HomeScreenLoggedIn from "./app/screens/HomeScreenLoggedIn";
 import ShowMoreScreen from "./app/screens/ShowMoreScreen";
 import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import CommunityHome from "./app/screens/CommunityHome";
 import CreateCommunityEvent from "./app/screens/CreateCommunityEvent";
 import CommentSection from "./app/screens/CommentSection";
 import AttendEvent from "./app/screens/AttendEvent";
 import EventBookmarks from "./app/screens/EventBookmarks";
+import { AuthContext } from "./app/screens/AuthProvider";
+import { AuthProvider } from "./app/screens/AuthProvider";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
-const HomeStack = ({ isAuthenticated }) => {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="HomeScreen"
-        component={HomeScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ShowMoreScreen"
-        component={ShowMoreScreen}
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="ProfileScreen"
-        component={ProfileScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="CommunityHome"
-        component={CommunityHome}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="CreateCommunityEvent"
-        component={CreateCommunityEvent}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="CommentSection"
-        component={CommentSection}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="LoginScreen"
-        component={LoginScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="RegisterScreen"
-        component={RegisterScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="AttendEvent"
-        component={AttendEvent}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="EventBookmarks"
-        component={EventBookmarks}
-        options={{ headerShown: false }}
-      />
-    </Stack.Navigator>
-  );
-};
-const MainTabNavigator = ({ isAuthenticated }) => {
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-
-          if (route.name === "Home") {
-            iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "Create Event") {
-            iconName = focused ? "add-outline" : "ios-add-outline";
-          } else if (route.name === "Notifications") {
-            iconName = focused
-              ? "notifications-outline"
-              : "notifications-outline";
-          } else if (route.name === "Profile") {
-            iconName = focused ? "person-outline" : "person-outline";
-          } else if (route.name === "Community") {
-            iconName = focused ? "people-outline" : "people-outline";
-          }
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-      })}
-    >
-      <Tab.Screen
-        name="Home"
-        children={() => <HomeStack isAuthenticated={isAuthenticated} />}
-        options={{ headerShown: false }}
-      />
-      <Tab.Screen
-        name="Create Event"
-        component={CreateEventScreen}
-        options={{ headerShown: false }}
-      />
-      <Tab.Screen
-        name="Community"
-        component={CommunityScreen}
-        options={{ headerShown: false }}
-      />
-      <Tab.Screen
-        name="Notifications"
-        component={NotificationScreen}
-        options={{ headerShown: false }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ headerShown: false }}
-      />
-    </Tab.Navigator>
-  );
-};
-const App = () => {
-  const [isAuthenticated, setAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("User authenticated");
-        setAuthenticated(true);
-      } else {
-        console.log("User not authenticated");
-        setAuthenticated(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
+export default function App() {
   return (
     <NavigationContainer>
-      <MainTabNavigator isAuthenticated={isAuthenticated} />
+      <Stack.Navigator>
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="LoginScreen"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="CommentSection"
+          component={CommentSection}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ShowMoreScreen"
+          component={ShowMoreScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AttendEvent"
+          component={AttendEvent}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="EventBookmarks"
+          component={EventBookmarks}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CommunityHome"
+          component={CommunityHome}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CommunityScreen"
+          component={CommunityScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CreateCommunityEvent"
+          component={CreateCommunityEvent}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ProfileScreen"
+          component={ProfileScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="RegisterScreen"
+          component={RegisterScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CreateEventScreen"
+          component={CreateEventScreen}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
     </NavigationContainer>
   );
-};
-
-export default App;
+}
