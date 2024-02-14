@@ -31,12 +31,14 @@ import { set } from "firebase/database";
 import { auth } from "../database/config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-//nav log
-console.log("Login screen");
-
+//for consistent styling
 const screenHeight = Dimensions.get("window").height;
+const screenWidth = Dimensions.get("window").width;
 
 function LoginScreen({ navigation }) {
+  console.log("Nav : Login screen");
+  //console.log("User authentication : ", isAuthenticated);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -46,9 +48,14 @@ function LoginScreen({ navigation }) {
         Alert.alert("Error", "Both email and password are required.");
         return;
       }
+      console.log("test 1: email/pass value: ", email, password);
+
       const auth = getAuth();
+      console.log("test 2: auth value: ", auth);
+
       await signInWithEmailAndPassword(auth, email, password);
 
+      //setting user email as async item
       await AsyncStorage.setItem("userEmail", email);
 
       console.log("Authentication succeeded for user: " + email);

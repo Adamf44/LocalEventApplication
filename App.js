@@ -1,7 +1,4 @@
-import React from "react";
-import { AppRegistry } from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import HomeScreen from "./app/screens/HomeScreen";
@@ -12,33 +9,35 @@ import RegisterScreen from "./app/screens/RegisterScreen";
 import ProfileScreen from "./app/screens/ProfileScreen";
 import CommunityScreen from "./app/screens/CommunityScreen";
 import ShowMoreScreen from "./app/screens/ShowMoreScreen";
-import { useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import CommunityHome from "./app/screens/CommunityHome";
 import CreateCommunityEvent from "./app/screens/CreateCommunityEvent";
 import CommentSection from "./app/screens/CommentSection";
 import AttendEvent from "./app/screens/AttendEvent";
 import EventBookmarks from "./app/screens/EventBookmarks";
-import { AuthContext } from "./app/screens/AuthProvider";
-import { AuthProvider } from "./app/screens/AuthProvider";
+import NavBar from "./app/screens/NavBar";
 
-const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // You can implement authentication logic here to update isAuthenticated state
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen
-          name="HomeScreen"
-          component={HomeScreen}
-          options={{ headerShown: false }}
-        />
         <Stack.Screen
           name="LoginScreen"
           component={LoginScreen}
           options={{ headerShown: false }}
         />
-
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="CommentSection"
           component={CommentSection}
@@ -60,13 +59,18 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="CommunityHome"
-          component={CommunityHome}
+          name="CreateEventScreen"
+          component={CreateEventScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
           name="CommunityScreen"
           component={CommunityScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CommunityHome"
+          component={CommunityHome}
           options={{ headerShown: false }}
         />
         <Stack.Screen
@@ -84,12 +88,14 @@ export default function App() {
           component={RegisterScreen}
           options={{ headerShown: false }}
         />
+
         <Stack.Screen
-          name="CreateEventScreen"
-          component={CreateEventScreen}
+          name="NotificationScreen"
+          component={NotificationScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
+      <NavBar />
     </NavigationContainer>
   );
 }

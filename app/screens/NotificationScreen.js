@@ -31,14 +31,33 @@ import { db } from "../database/config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 import { useRoute } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
+
 const screenHeight = Dimensions.get("window").height;
 
 const NotificationScreen = () => {
   const [recipient, setRecipient] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const sendEmail = async () => {};
+  //use effect to control auth
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isAuthenticated) {
+      }
+    }, [isAuthenticated])
+  );
+  console.log("User is authenticated on notifications: " + isAuthenticated);
 
   const handleLoginPress = () => {
     //navigation.navigate("LoginScreen");
@@ -59,23 +78,16 @@ const NotificationScreen = () => {
         style={styles.input}
         placeholder="Recipient"
         value={recipient}
-        onChangeText={setRecipient}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Subject"
-        value={subject}
-        onChangeText={setSubject}
-      />
+      <TextInput style={styles.input} placeholder="Subject" value={subject} />
       <TextInput
         style={[styles.input, styles.bodyInput]}
         placeholder="Body"
         value={body}
-        onChangeText={setBody}
         multiline
       />
 
-      <TouchableOpacity onPress={sendEmail} style={styles.sendEmailButton}>
+      <TouchableOpacity>
         <Text style={styles.sendEmailButtonText}>Send Email</Text>
       </TouchableOpacity>
     </View>

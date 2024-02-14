@@ -55,9 +55,25 @@ const HomeScreen = ({ navigation, route }) => {
   const [eventLocation, setEventLocation] = useState("");
   const [eventPic, setEventPic] = useState(".");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { userEmail, setUserEmail } = route.params || {};
-  const { isAuthenticated = false } = route.params || {};
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
+  //use effect to control auth
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isAuthenticated) {
+      }
+    }, [isAuthenticated])
+  );
   console.log("User is authenticated on home: " + isAuthenticated);
 
   useEffect(() => {
@@ -295,43 +311,6 @@ const HomeScreen = ({ navigation, route }) => {
           )}
         />
       </View>
-
-      <View style={styles.navBar}>
-        <TouchableOpacity
-          style={styles.navButtons}
-          onPress={() => navigation.navigate("HomeScreen")}
-        >
-          <Text>Home</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navButtons}
-          onPress={() => navigation.navigate("CreateEventScreen")}
-        >
-          <Text>Create</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navButtons}
-          onPress={() => navigation.navigate("CommunityScreen")}
-        >
-          <Text>Community</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navButtons}
-          onPress={() => navigation.navigate("UserHomeScreen")}
-        >
-          <Text>Hello</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.navButtons}
-          onPress={() => navigation.navigate("UserHomeScreen")}
-        >
-          <Text>Hello</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -339,7 +318,7 @@ const HomeScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "whitesmoke",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -351,36 +330,14 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
     backgroundColor: "#3498db",
   },
-  navBar: {
-    flexDirection: "row",
-    flex: 1,
-    backgroundColor: "white",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "absolute",
-    bottom: 0,
-    zIndex: 999,
-    alignSelf: "center",
-    width: "100%",
-    borderTopWidth: 2,
-    borderTopColor: "black",
-  },
-  navButtons: {
-    marginVertical: 35,
-    marginHorizontal: 20,
-  },
-  line: {
-    height: 2,
-    backgroundColor: "#3498db",
-    marginVertical: 5,
-  },
+
   flatListContainer: {
     flex: 1,
     padding: 16,
   },
   innerContainer: {
     borderWidth: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "ghostwhite",
     borderColor: "#ddd",
     borderRadius: 12,
     padding: 16,
@@ -412,7 +369,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
+    color: "snow",
   },
 
   logInButton: {
@@ -449,8 +406,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   image: {
-    width: "100%",
-    height: 200,
+    width: "90%",
+    height: 180,
     borderRadius: 8,
     marginBottom: 12,
   },
@@ -558,7 +515,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   eventName: {
-    fontSize: 25,
+    fontSize: 22,
     fontWeight: "bold",
     color: "black",
     fontStyle: "italic",

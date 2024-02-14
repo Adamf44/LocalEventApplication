@@ -1,4 +1,3 @@
-import React from "react";
 import {
   View,
   Text,
@@ -12,7 +11,8 @@ import {
   RefreshControl,
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import {
   collection,
@@ -27,47 +27,58 @@ import { db } from "../database/config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useAuth } from "firebase/auth";
 import { Alert } from "react-native";
-
 import { useNavigation } from "@react-navigation/native";
-
-//nav log
-console.log("Community section page");
 
 const CommunitiesTab = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-
   const navigation = useNavigation();
-  const auth = getAuth();
   const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [userCommunities, setUserCommunities] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const isAuthenticated = !!currentUser;
-
+  //use effect to control auth
   useEffect(() => {
+    const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUser(user);
-        fetchUserCommunities(user.email);
-      }
+      setIsAuthenticated(!!user);
     });
 
     return () => unsubscribe();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isAuthenticated) {
+      }
+    }, [isAuthenticated])
+  );
+  console.log(
+    "User is authenticated on active communities tab: " + isAuthenticated
+  );
+
   const handleRefresh = () => {
     if (currentUser) {
-      fetchUserCommunities(currentUser.email);
+      fetchUserCommunities(currentUserEmail);
     }
   };
 
-  const fetchUserCommunities = async (userEmail) => {
+  const fetchUserCommunities = async () => {
     setIsRefreshing(true);
-
     try {
+      // Retrieve the user's email from AsyncStorage
+      const currentUserEmail = await getUserEmail();
+      if (!currentUserEmail) {
+        console.log("User email not found in AsyncStorage");
+        return;
+      }
+
+      console.log("User email retrieved from AsyncStorage:", currentUserEmail);
+
       const querySnapshot = await getDocs(
         query(
           collection(db, "Communities"),
-          where("userEmail", "==", userEmail)
+          where("userEmail", "==", currentUserEmail)
         )
       );
       const communities = [];
@@ -85,6 +96,10 @@ const CommunitiesTab = () => {
       setIsRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    fetchUserCommunities();
+  }, [isRefreshing]);
 
   if (!currentUser) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -125,21 +140,23 @@ const CreateTab = () => {
   const auth = getAuth();
   const [currentUser, setCurrentUser] = useState(null);
 
-  const isAuthenticated = !!currentUser;
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigation = useNavigation();
 
+  //use effect to control auth
   useEffect(() => {
+    const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUser(user);
-      } else {
-        setCurrentUser(null);
-      }
+      setIsAuthenticated(!!user);
     });
 
     return () => unsubscribe();
   }, []);
+
+  console.log(
+    "User is authenticated on community create tab: " + isAuthenticated
+  );
 
   const handleCreateCommunity = async () => {
     if (!isAuthenticated) {
@@ -286,5 +303,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
 export default CommunityScreen;

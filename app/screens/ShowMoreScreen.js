@@ -47,7 +47,6 @@ const ShowMoreScreen = ({ navigation, route }) => {
   console.log("User is authenticated on show more: " + isAuthenticated);
 
   useEffect(() => {
-    getData();
     console.log("eventName:", eventName);
     if (eventName) {
       fetchData();
@@ -107,7 +106,6 @@ const ShowMoreScreen = ({ navigation, route }) => {
       });
 
       setEvent(info);
-      getData();
     });
   }
 
@@ -132,7 +130,7 @@ const ShowMoreScreen = ({ navigation, route }) => {
     fetchCommentData();
   };
   const handleGoBack = () => {
-    navigation.navigate("HomeScreen", { isAuthenticated: true });
+    navigation.navigate("HomeScreen", { isAuthenticated });
   };
 
   const handleAddComment = async () => {
@@ -152,26 +150,13 @@ const ShowMoreScreen = ({ navigation, route }) => {
     });
 
     fetchCommentData();
-
     setNewComment("");
   };
 
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem("Username");
-      const usernameFromAsyncStorage = value.toString();
-      if (value !== null) {
-        console.log("value is " + usernameFromAsyncStorage);
-        setUsername(usernameFromAsyncStorage);
-        console.log("username set to:", usernameFromAsyncStorage);
-      }
-    } catch (e) {
-      // error reading value
-    }
-  };
+
   return (
     <View style={styles.container}>
       <View style={styles.appHead}>

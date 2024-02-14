@@ -15,21 +15,37 @@ import { getDocs, query, collection, where } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { db } from "../database/config";
-import { getAuth, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { Button } from "react-native-web";
-
-//nav log
-console.log("Profile screen");
+import { useFocusEffect } from "@react-navigation/native";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const screenWidth = Dimensions.get("window").width;
+
 const ProfileScreen = ({ navigation, route }) => {
   const [userData, setUserData] = useState(null);
   const [username, setUsername] = useState("");
   const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { isAuthenticated } = route.params || { isAuthenticated: false };
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  console.log("we are authed" + isAuthenticated);
+  //use effect to control auth
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isAuthenticated) {
+      }
+    }, [isAuthenticated])
+  );
+  console.log("User is authenticated on notifications: " + isAuthenticated);
 
   function getUserAbout() {
     getDocs(

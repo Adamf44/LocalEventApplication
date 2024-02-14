@@ -43,19 +43,26 @@ const CreateEventScreen = ({ navigation, route }) => {
   const [eventComments, setEventComments] = useState([]);
   const [eventCounty, setEventCounty] = useState("");
   const [eventVillage, setEventVillage] = useState("");
-  const { isAuthenticated = false } = route.params || {};
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
-  //nav log
-  console.log("Create event page");
-  console.log("User is authenticated on create event: " + isAuthenticated);
-
+  //use effect to control auth
   useEffect(() => {
     const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
 
-    if (isAuthenticated) {
-      console.log("authentit");
-    }
+    return () => unsubscribe();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isAuthenticated) {
+      }
+    }, [isAuthenticated])
+  );
+  console.log("User is authenticated on create event: " + isAuthenticated);
 
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -322,6 +329,15 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 
+  line: {
+    height: 2,
+    backgroundColor: "#3498db",
+    marginVertical: 5,
+  },
+  lines: {
+    height: 20,
+    width: 10,
+  },
   logInButton: {
     backgroundColor: "#e74c3c",
     borderRadius: 8,
