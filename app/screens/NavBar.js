@@ -8,7 +8,7 @@ const NavBar = ({ isAuthenticated }) => {
   return (
     <View style={styles.navBar}>
       <View style={styles.navBar}>
-        <View style={styles.nav1}>
+        <View style={styles.nav}>
           <TouchableOpacity
             style={styles.navButtons}
             onPress={() =>
@@ -24,7 +24,7 @@ const NavBar = ({ isAuthenticated }) => {
           </TouchableOpacity>
         </View>
         <Image style={styles.lines} source={require("../assets/line.png")} />
-        <View style={styles.nav2}>
+        <View style={styles.nav}>
           <TouchableOpacity
             style={styles.navButtons}
             onPress={() =>
@@ -41,7 +41,7 @@ const NavBar = ({ isAuthenticated }) => {
         </View>
         <Image style={styles.lines} source={require("../assets/line.png")} />
 
-        <View style={styles.nav3}>
+        <View style={styles.nav}>
           <TouchableOpacity
             style={styles.navButtons}
             onPress={() =>
@@ -56,7 +56,7 @@ const NavBar = ({ isAuthenticated }) => {
         </View>
         <Image style={styles.lines} source={require("../assets/line.png")} />
 
-        <View style={styles.nav4}>
+        <View style={styles.nav}>
           <TouchableOpacity
             style={styles.navButtons}
             onPress={() =>
@@ -71,7 +71,7 @@ const NavBar = ({ isAuthenticated }) => {
         </View>
         <Image style={styles.lines} source={require("../assets/line.png")} />
 
-        <View style={styles.nav5}>
+        <View style={styles.nav}>
           <TouchableOpacity
             style={styles.navButtons}
             onPress={() =>
@@ -100,18 +100,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 999,
     width: "100%",
-    borderTopWidth: 4,
-    borderTopColor: "black",
-    backgroundColor: "snow",
-  },
-  navText: {
-    fontSize: 18,
+    backgroundColor: "#2c3e50",
   },
   navButtons: {
-    marginVertical: 16,
+    marginVertical: 25,
     marginHorizontal: 18,
   },
-  nav1: {
+  nav: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
@@ -120,7 +115,7 @@ const styles = StyleSheet.create({
   navHomeImg: {
     height: 30,
     width: 30,
-    opacity: 0.7,
+    opacity: 1,
   },
   line: {
     height: 2,

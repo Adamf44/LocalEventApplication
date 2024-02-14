@@ -19,6 +19,8 @@ import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../database/config";
 import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { Platform } from "react-native";
+import { unstable_renderSubtreeIntoContainer } from "react-dom";
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
@@ -306,8 +308,8 @@ const CreateEventScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: StatusBar.currentHeight || 40,
+    backgroundColor: "lightgrey",
+    marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
     flexDirection: "row",
@@ -318,15 +320,16 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
     backgroundColor: "#3498db",
   },
+
   contentContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    paddingBottom: 40,
+    justifyContent: "left",
+    paddingBottom: 100,
   },
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
+    color: "snow",
   },
 
   line: {
@@ -360,7 +363,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     alignSelf: "center",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#3498db",
     marginTop: 10,
@@ -369,7 +372,7 @@ const styles = StyleSheet.create({
   appHeadTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#ffffff",
+    color: "snow",
     marginTop: 10,
     marginBottom: 5,
   },
@@ -384,12 +387,13 @@ const styles = StyleSheet.create({
     width: "80%",
     height: 40,
     borderWidth: 1,
-    borderColor: "#bdc3c7",
+    borderColor: "black",
     marginBottom: 20,
     paddingHorizontal: 15,
     borderRadius: 10,
     color: "#2c3e50",
     fontSize: 16,
+    backgroundColor: "snow",
   },
   imagePickerButton: {
     backgroundColor: "#3498db",

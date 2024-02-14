@@ -287,12 +287,10 @@ const HomeScreen = ({ navigation, route }) => {
                   <Text style={styles.showMoreButtonText}>Show More</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.registerDetailsButton}
+                  style={styles.attendButton}
                   onPress={() => handleAttend(userEmail, item.eventName)}
                 >
-                  <Text style={styles.registerDetailsButtonText}>
-                    Attend event
-                  </Text>
+                  <Text style={styles.attendButtonText}>Attend event</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -318,7 +316,7 @@ const HomeScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "whitesmoke",
+    backgroundColor: "lightgrey",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -337,11 +335,11 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     borderWidth: 1,
-    backgroundColor: "ghostwhite",
-    borderColor: "#ddd",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    backgroundColor: "snow",
+    borderColor: "black",
+    borderRadius: 30,
+    padding: 30,
+    marginBottom: 10,
     width: screenWidth * 0.9,
     alignSelf: "center",
     shadowColor: "#000",
@@ -393,7 +391,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   searchBar: {
-    backgroundColor: "#ecf0f1",
+    backgroundColor: "snow",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -411,13 +409,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
   },
-  registerDetailsButtonText: {
+  attendButtonText: {
     fontSize: 12,
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
   },
-  registerDetailsButton: {
+  attendButton: {
     backgroundColor: "#e74c3c",
     borderRadius: 8,
     height: 30,

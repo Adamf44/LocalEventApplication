@@ -36,9 +36,6 @@ const screenHeight = Dimensions.get("window").height;
 const screenWidth = Dimensions.get("window").width;
 
 function LoginScreen({ navigation }) {
-  console.log("Nav : Login screen");
-  //console.log("User authentication : ", isAuthenticated);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -48,10 +45,8 @@ function LoginScreen({ navigation }) {
         Alert.alert("Error", "Both email and password are required.");
         return;
       }
-      console.log("test 1: email/pass value: ", email, password);
 
       const auth = getAuth();
-      console.log("test 2: auth value: ", auth);
 
       await signInWithEmailAndPassword(auth, email, password);
 
@@ -93,7 +88,6 @@ function LoginScreen({ navigation }) {
         placeholderTextColor={"#4f5250"}
         secureTextEntry={true}
       />
-
       <TouchableOpacity style={styles.button} onPress={signInUser}>
         <Text style={styles.buttonText}>Log in</Text>
       </TouchableOpacity>
@@ -140,7 +134,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   registerButton: {
-    backgroundColor: "#e74c3c",
+    backgroundColor: "#3498db",
     borderRadius: 5,
     width: screenHeight * 0.15,
     height: 40,
