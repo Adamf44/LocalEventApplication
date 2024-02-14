@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
   eventName: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "black",
+    color: "#2c3e50",
     fontStyle: "italic",
   },
   eventDescription: {

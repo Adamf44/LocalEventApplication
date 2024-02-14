@@ -47,46 +47,47 @@ const ProfileScreen = ({ navigation, route }) => {
   );
   console.log("User is authenticated on notifications: " + isAuthenticated);
 
-  function getUserAbout() {
-    getDocs(
-      query(collection(db, "Users"), where("email", "==", currentUserEmail))
-    ).then((docSnap) => {
-      let info = [];
-      docSnap.forEach((doc) => {
-        const { fullName, userBio, username, password, email } = doc.data();
-
-        info.push({
-          ...doc.data(),
-          id: doc.id,
-          fullName,
-          userBio,
-          username,
-          password,
-          email,
-        });
-        setUsername(username);
-      });
-
-      setUserData(info);
-    });
-  }
-
   useEffect(() => {
-    getData();
-    getUserAbout();
-  }, [currentUserEmail, isRefreshing]);
+    const getUserAbout = async () => {
+      try {
+        const value = await AsyncStorage.getItem("userEmail");
+        if (value !== null) {
+          setCurrentUserEmail(value);
 
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem("userEmail");
-      if (value !== null) {
-        setCurrentUserEmail(value);
+          getDocs(
+            query(collection(db, "Users"), where("email", "==", value))
+          ).then((docSnap) => {
+            let info = [];
+            docSnap.forEach((doc) => {
+              const { fullName, userBio, username, password, email } =
+                doc.data();
+
+              info.push({
+                ...doc.data(),
+                id: doc.id,
+                fullName,
+                userBio,
+                username,
+                password,
+                email,
+              });
+              setUsername(username);
+            });
+
+            setUserData(info);
+          });
+        } else {
+          console.log("User email not found in AsyncStorage");
+        }
+      } catch (error) {
+        console.error("Error fetching user about information: ", error.message);
       }
-    } catch (e) {
-      console.error("Error reading user email from AsyncStorage:", e);
-    }
-  };
+    };
 
+    getUserAbout();
+  }, []);
+
+  //to handle the log out
   const handleLogout = async () => {
     setUserData(null);
     setUsername(null);
@@ -94,7 +95,6 @@ const ProfileScreen = ({ navigation, route }) => {
     const auth = getAuth();
     try {
       await signOut(auth);
-
       isAuthenticated: false;
       await AsyncStorage.removeItem("userEmail");
       navigation.navigate("HomeScreen", {});

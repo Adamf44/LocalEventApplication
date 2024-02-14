@@ -8,6 +8,8 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  StatusBar,
+  Dimensions,
   RefreshControl,
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -28,6 +30,15 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useAuth } from "firebase/auth";
 import { Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialIcons } from "@expo/vector-icons";
+
+const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
+
+const handleLoginPress = () => {
+  navigation.navigate("LoginScreen");
+};
 
 const CommunitiesTab = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -56,80 +67,83 @@ const CommunitiesTab = () => {
   console.log(
     "User is authenticated on active communities tab: " + isAuthenticated
   );
-
-  const handleRefresh = () => {
-    if (currentUser) {
-      fetchUserCommunities(currentUserEmail);
-    }
-  };
-
-  const fetchUserCommunities = async () => {
-    setIsRefreshing(true);
-    try {
-      // Retrieve the user's email from AsyncStorage
-      const currentUserEmail = await getUserEmail();
-      if (!currentUserEmail) {
-        console.log("User email not found in AsyncStorage");
-        return;
-      }
-
-      console.log("User email retrieved from AsyncStorage:", currentUserEmail);
-
-      const querySnapshot = await getDocs(
-        query(
-          collection(db, "Communities"),
-          where("userEmail", "==", currentUserEmail)
-        )
-      );
-      const communities = [];
-      querySnapshot.forEach((doc) => {
-        communities.push({
-          id: doc.id,
-          ...doc.data(),
-        });
-      });
-
-      setUserCommunities(communities);
-    } catch (error) {
-      console.error("Error: ", error.message);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   useEffect(() => {
-    fetchUserCommunities();
-  }, [isRefreshing]);
+    const fetchUserCommunities = async () => {
+      try {
+        const userEmail = await AsyncStorage.getItem("userEmail");
 
-  if (!currentUser) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
+        if (!userEmail) {
+          console.log("User email not found in AsyncStorage");
+        }
+
+        const querySnapshot = await getDocs(
+          query(
+            collection(db, "Communities"),
+            where("userEmail", "==", userEmail)
+          )
+        );
+
+        const communities = [];
+
+        querySnapshot.forEach((doc) => {
+          communities.push({
+            id: doc.id,
+            ...doc.data(),
+          });
+        });
+
+        setUserCommunities(communities);
+      } catch (error) {
+        console.error("Error: ", error.message);
+      }
+    };
+
+    fetchUserCommunities();
+  }, []);
+
+  // commented out activity circle (if doing conditional auth)
+  // if (!userEmail) {
+  // return <ActivityIndicator size="large" color="#0000ff" />;
+  // }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Active Communities</Text>
-      <FlatList
-        data={userCommunities}
-        keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
-        }
-        renderItem={({ item }) => (
+      <View style={styles.appHead}>
+        <Text style={styles.titleText}>EventFinder</Text>
+        <Text style={styles.appHeadTitle}>Active communities</Text>
+        {isAuthenticated ? null : (
           <TouchableOpacity
-            onPress={() => {
-              navigation.navigate("CommunityHome", {
-                community: item.communityName,
-                userEmail: currentUser.email,
-                isAuthenticated,
-              });
-            }}
+            onPress={handleLoginPress}
+            style={styles.logInButton}
           >
-            <View style={styles.card}>
-              <Text style={styles.cardText}>{item.communityName}</Text>
-              <Text style={styles.cardDesc}>{item.description}</Text>
-            </View>
+            <Text style={styles.logInButtonText}>Log in</Text>
           </TouchableOpacity>
         )}
-      />
+      </View>
+      <View style={styles.flatListContainer}>
+        <FlatList
+          data={userCommunities}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.innerContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate("CommunityHome", {
+                    community: item.communityName,
+                    userEmail: currentUser.email,
+                    isAuthenticated,
+                  });
+                }}
+              >
+                <View style={styles.card}>
+                  <Text style={styles.cardText}>{item.communityName}</Text>
+                  <Text style={styles.cardDesc}>{item.description}</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      </View>
     </View>
   );
 };
@@ -137,7 +151,6 @@ const CreateTab = () => {
   const [communityName, setCommunityName] = useState("");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState("");
-  const auth = getAuth();
   const [currentUser, setCurrentUser] = useState(null);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -159,29 +172,21 @@ const CreateTab = () => {
   );
 
   const handleCreateCommunity = async () => {
-    if (!isAuthenticated) {
-      Alert.alert(
-        "Authentication Required",
-        "Please log in to create a community.",
-        [{ text: "OK", onPress: () => navigation.navigate("LoginScreen") }]
-      );
-      return;
-    }
     try {
-      if (currentUser) {
-        const docRef = await addDoc(collection(db, "Communities"), {
-          communityName,
-          description,
-          visibility,
-          userEmail: currentUser.email,
-        });
+      const userEmail = await AsyncStorage.getItem("userEmail");
 
-        console.log("Community created with ID: ", docRef.id);
+      const docRef = await addDoc(collection(db, "Communities"), {
+        communityName,
+        description,
+        visibility,
+        userEmail: userEmail,
+      });
 
-        setCommunityName("");
-        setDescription("");
-        setVisibility("");
-      }
+      console.log("Community created with ID: ", docRef.id);
+
+      setCommunityName("");
+      setDescription("");
+      setVisibility("");
     } catch (error) {
       console.error("Error creating community: ", error.message);
     }
@@ -189,34 +194,50 @@ const CreateTab = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>
-        Create a New Community & invite friends!
-      </Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Community Name"
-        value={communityName}
-        onChangeText={(text) => setCommunityName(text)}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Description"
-        value={description}
-        onChangeText={(text) => setDescription(text)}
-        multiline
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Visibility (Private, Public, etc.)"
-        value={visibility}
-        onChangeText={(text) => setVisibility(text)}
-      />
-      <TouchableOpacity
-        style={styles.createButton}
-        onPress={handleCreateCommunity}
-      >
-        <Text style={styles.createButtonText}>Create</Text>
-      </TouchableOpacity>
+      <View style={styles.appHead}>
+        <Text style={styles.titleText}>EventFinder</Text>
+        <Text style={styles.appHeadTitle}>Create a community</Text>
+        {isAuthenticated ? null : (
+          <TouchableOpacity
+            onPress={handleLoginPress}
+            style={styles.logInButton}
+          >
+            <Text style={styles.logInButtonText}>Log in</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.createContainer}>
+        <Text style={styles.heading}>
+          Create a New Community & invite friends!
+        </Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Community Name"
+          value={communityName}
+          onChangeText={(text) => setCommunityName(text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Description"
+          value={description}
+          onChangeText={(text) => setDescription(text)}
+          multiline
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Visibility (Private, Public, etc.)"
+          value={visibility}
+          onChangeText={(text) => setVisibility(text)}
+        />
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={handleCreateCommunity}
+        >
+          <Text style={styles.createButtonText}>Create</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 };
@@ -226,81 +247,134 @@ const Tab = createBottomTabNavigator();
 const CommunityScreen = () => {
   return (
     <Tab.Navigator
-      screenOptions={{
-        tabBarActiveTintColor: "black",
-        tabBarInactiveTintColor: "gray",
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+
+          if (route.name === "Communities") {
+            iconName = "group"; // Set icon for 'Communities' tab
+          } else if (route.name === "Create") {
+            iconName = "add-circle"; // Set icon for 'Create' tab
+          }
+
+          // Return the icon component
+          return <MaterialIcons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: "snow",
+        tabBarInactiveTintColor: "#3498db",
+        tabBarActiveBackgroundColor: "#3498db",
         tabBarLabelStyle: {
           fontSize: 16,
           fontWeight: "bold",
+          alignSelf: "center",
         },
         tabBarStyle: {
-          backgroundColor: "#ffffff",
+          backgroundColor: "snow",
           height: 100,
+          marginBottom: 50,
+          backgroundColor: "snow",
         },
-        tabBarIndicatorStyle: {
-          backgroundColor: "red",
-          height: 0,
-        },
-      }}
+      })}
     >
-      <Tab.Screen name="Communities" component={CommunitiesTab} />
-      <Tab.Screen name="Create" component={CreateTab} />
+      <Tab.Screen
+        name="Communities"
+        component={CommunitiesTab}
+        options={{ headerShown: false }}
+      />
+      <Tab.Screen
+        name="Create"
+        component={CreateTab}
+        options={{ headerShown: false }}
+      />
     </Tab.Navigator>
   );
 };
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "lightgrey",
+    marginTop: StatusBar.currentHeight || 40,
+  },
+  appHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
+  },
+  flatListContainer: {
+    flex: 1,
+    padding: 5,
+  },
+  createContainer: {
+    flex: 1,
+    padding: 10,
+    alignItems: "center",
   },
   heading: {
-    fontSize: 25,
+    marginBottom: 15,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 20,
-    color: "black",
+    color: "#2c3e50",
   },
-  createButton: {
-    backgroundColor: "#3498db",
-    borderRadius: 8,
-    marginTop: "10%",
-    padding: 15,
-    width: 80,
-    alignSelf: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
   },
-  createButtonText: { fontSize: 14, color: "white", fontWeight: "bold" },
+  innerContainer: {
+    padding: 20,
+  },
+  appHeadTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "snow",
+    marginTop: 10,
+    marginBottom: 5,
+  },
+
   card: {
-    borderWidth: 1,
-    borderColor: "#ddd",
+    alignSelf: "center",
     borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    backgroundColor: "#5DA5D4",
+    padding: 20,
+    backgroundColor: "#2c3e50",
+    width: "100%",
   },
   cardText: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: "bold",
     color: "white",
   },
   cardDesc: {
-    fontSize: 15,
+    fontSize: 10,
     color: "white",
   },
   input: {
-    alignSelf: "center",
-    width: "80%",
     height: 40,
     borderWidth: 1,
     borderColor: "#bdc3c7",
     marginBottom: 20,
     paddingHorizontal: 15,
     borderRadius: 10,
-    color: "#2c3e50",
+    backgroundColor: "snow",
     fontSize: 16,
+    width: "80%",
+  },
+  createButton: {
+    backgroundColor: "#3498db",
+    borderRadius: 8,
+    padding: 15,
+    alignSelf: "center",
+    width: 150,
+    marginTop: 10,
+  },
+  createButtonText: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
 export default CommunityScreen;

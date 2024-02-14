@@ -178,7 +178,6 @@ const CreateEventScreen = ({ navigation, route }) => {
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
