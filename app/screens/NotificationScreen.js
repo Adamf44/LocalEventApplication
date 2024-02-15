@@ -1,45 +1,21 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  TextInput,
-  Button,
-  ScrollView,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-  ActivityIndicator,
-  Image,
-  StatusBar,
-} from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { useEffect, useState } from "react";
-import Icon from "react-native-vector-icons/FontAwesome";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList } from "react-native";
 import {
   collection,
-  doc,
-  setDoc,
-  addDoc,
-  getDocs,
   query,
+  onSnapshot,
   where,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "../database/config";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { useNavigation } from "@react-navigation/native";
-import { useRoute } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
-
-const screenHeight = Dimensions.get("window").height;
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const NotificationScreen = () => {
-  const [recipient, setRecipient] = useState("");
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
+  const [events, setEvents] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
   //use effect to control auth
   useEffect(() => {
@@ -57,39 +33,45 @@ const NotificationScreen = () => {
       }
     }, [isAuthenticated])
   );
-  console.log("User is authenticated on notifications: " + isAuthenticated);
+  console.log("User is authenticated on noti: " + isAuthenticated);
 
-  const handleLoginPress = () => {
-    //navigation.navigate("LoginScreen");
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userEmail = await AsyncStorage.getItem("userEmail");
+        const eventsQuerySnapshot = await getDocs(
+          query(collection(db, "Events"), where("userEmail", "==", userEmail))
+        );
+        const eventsData = eventsQuerySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          eventName: doc.data().eventName,
+          attendees: doc.data().attendees || [],
+        }));
+        console.log(eventsData);
+        setEvents(eventsData);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchData();
+
+    // Cleanup function
+    return () => {};
+  }, []);
 
   return (
     <View style={styles.container}>
-      <View style={styles.appHead}>
-        <Text style={styles.titleText}>EventFinder</Text>
-
-        <TouchableOpacity onPress={handleLoginPress} style={styles.logInButton}>
-          <Text style={styles.logInButtonText}>Log in</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.text}>Notification screen</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Recipient"
-        value={recipient}
+      <FlatList
+        data={events}
+        renderItem={({ item }) => (
+          <View style={styles.eventContainer}>
+            <Text style={styles.eventName}>{item.eventName}</Text>
+            <Text style={styles.attendees}>{item.attendees.join(", ")}</Text>
+          </View>
+        )}
+        keyExtractor={(item) => item.id}
       />
-      <TextInput style={styles.input} placeholder="Subject" value={subject} />
-      <TextInput
-        style={[styles.input, styles.bodyInput]}
-        placeholder="Body"
-        value={body}
-        multiline
-      />
-
-      <TouchableOpacity>
-        <Text style={styles.sendEmailButtonText}>Send Email</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -98,76 +80,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    marginTop: StatusBar.currentHeight || 40,
   },
-  appHead: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
+  eventContainer: {
+    padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
-    backgroundColor: "#3498db",
   },
-  text: {
-    marginTop: 30,
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333333",
-    marginBottom: 20,
-    alignSelf: "center",
-  },
-  logInButton: {
-    backgroundColor: "#e74c3c",
-    borderRadius: 8,
-    padding: 15,
-    width: 80,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  sendEmailButton: {
-    backgroundColor: "#e74c3c",
-    borderRadius: 5,
-    width: screenHeight * 0.15,
-    height: 40,
-    marginBottom: 10,
-    justifyContent: "center",
-    marginTop: 10,
-    alignSelf: "center",
-  },
-  sendEmailButtonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontSize: 20,
-    lineHeight: 40,
-  },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-
-  logInButtonText: {
-    fontSize: 14,
-    color: "#fff",
+  eventName: {
+    fontSize: 18,
     fontWeight: "bold",
   },
-  input: {
-    marginTop: 30,
-    width: "80%",
-    height: 40,
-    borderColor: "#CCCCCC",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    alignSelf: "center",
-  },
-  bodyInput: {
-    height: 100,
+  attendees: {
+    fontSize: 16,
+    marginTop: 5,
   },
 });
 

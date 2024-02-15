@@ -22,8 +22,15 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Platform } from "react-native";
 import { unstable_renderSubtreeIntoContainer } from "react-dom";
 
+//Globals
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////              Logic         /////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
 const CreateEventScreen = ({ navigation, route }) => {
   const [eventName, setEventName] = useState("");
@@ -48,24 +55,6 @@ const CreateEventScreen = ({ navigation, route }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
-  //use effect to control auth
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsAuthenticated(!!user);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!isAuthenticated) {
-      }
-    }, [isAuthenticated])
-  );
-  console.log("User is authenticated on create event: " + isAuthenticated);
-
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -86,8 +75,29 @@ const CreateEventScreen = ({ navigation, route }) => {
     }
   }
 
+  //use effect to control auth
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isAuthenticated) {
+      }
+    }, [isAuthenticated])
+  );
+  console.log("User is authenticated on create event: " + isAuthenticated);
+
   const createEvent = async () => {
     try {
+      const userEmail = await AsyncStorage.getItem("userEmail");
+      setUserEmail(userEmail);
+
       if (!isAuthenticated) {
         Alert.alert(
           "Authentication Required",
@@ -117,7 +127,6 @@ const CreateEventScreen = ({ navigation, route }) => {
       await uploadBytes(storageRef, imageBlob);
 
       const imageUrl = await getDownloadURL(storageRef);
-      setUsername(username);
       const data = {
         eventName: eventName.trim(),
         eventDescription: eventDescription.trim(),
@@ -138,6 +147,7 @@ const CreateEventScreen = ({ navigation, route }) => {
         eventComments,
         eventCounty,
         eventVillage,
+        userEmail,
       };
 
       await setDoc(doc(db, "Events", eventName), data);
@@ -161,6 +171,7 @@ const CreateEventScreen = ({ navigation, route }) => {
       setEventComments([]);
       setEventCounty("");
       setEventVillage("");
+      setUserEmail("");
 
       Alert.alert("Success", "Successfully created an event!", [
         {
@@ -178,6 +189,13 @@ const CreateEventScreen = ({ navigation, route }) => {
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////              UI            /////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -301,8 +319,14 @@ const CreateEventScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
-  );
-};
+  ); //End return
+}; //End createEventScree function
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////              Style         /////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
 const styles = StyleSheet.create({
   container: {

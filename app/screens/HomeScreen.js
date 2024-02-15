@@ -41,10 +41,18 @@ import {
 import { db } from "../database/config";
 import { useRoute } from "@react-navigation/native";
 
+//Globals
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////              Logic         /////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
 const HomeScreen = ({ navigation, route }) => {
+  //variables
   const [event, setEvent] = useState([]);
   const [eventName, setEventName] = useState("");
   const [category, setCategory] = useState("");
@@ -76,10 +84,12 @@ const HomeScreen = ({ navigation, route }) => {
   );
   console.log("User is authenticated on home: " + isAuthenticated);
 
+  //get initial data
   useEffect(() => {
     fetchData();
   }, []);
 
+  //function to get Event data
   const fetchData = async () => {
     setIsRefreshing(true);
     try {
@@ -100,6 +110,7 @@ const HomeScreen = ({ navigation, route }) => {
           username,
           imageUrl,
         } = doc.data();
+        //if '!communityName' to check it is not a community event(As they are private to a user and who they invite)
         if (!communityName) {
           events.push({
             id: doc.id,
@@ -134,6 +145,7 @@ const HomeScreen = ({ navigation, route }) => {
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
+
   const handleBookmark = async (eventName) => {
     try {
       const eventRef = doc(db, "Events", eventName);
@@ -153,10 +165,7 @@ const HomeScreen = ({ navigation, route }) => {
 
           Alert.alert("Event Bookmarked", "This event has been bookmarked.");
         } else {
-          Alert.alert(
-            "Already Bookmarked",
-            "You have already bookmarked this event."
-          );
+          Alert.alert("Already Bookmarked", "Already bookmarked this event.");
         }
       } else {
         Alert.alert(
@@ -202,7 +211,6 @@ const HomeScreen = ({ navigation, route }) => {
         console.error("Error checking attendees:", error);
       });
   };
-
   const handleComment = (eventName) => {
     navigation.navigate("CommentSection", {
       eventName,
@@ -210,6 +218,12 @@ const HomeScreen = ({ navigation, route }) => {
       isAuthenticated,
     });
   };
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////              UI            /////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <View style={styles.container}>
@@ -310,13 +324,19 @@ const HomeScreen = ({ navigation, route }) => {
         />
       </View>
     </View>
-  );
-};
+  ); //end return
+}; //end Homescreen function
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////              Style         /////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "lightgrey",
+    backgroundColor: "#fff",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -334,9 +354,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   innerContainer: {
-    borderWidth: 1,
+    borderWidth: 2,
     backgroundColor: "snow",
-    borderColor: "black",
+    borderColor: "darkgrey",
     borderRadius: 30,
     padding: 30,
     marginBottom: 10,
@@ -418,6 +438,8 @@ const styles = StyleSheet.create({
   attendButton: {
     backgroundColor: "#e74c3c",
     borderRadius: 8,
+    borderColor: "#2c3e50",
+    borderWidth: 1,
     height: 30,
     justifyContent: "center",
     width: "70%",
@@ -431,6 +453,8 @@ const styles = StyleSheet.create({
   commentButton: {
     backgroundColor: "#2ecc71",
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#2c3e50",
     height: 70,
     width: "20%",
     justifyContent: "center",
@@ -455,6 +479,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f39c12",
     opacity: 0.95,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#2c3e50",
     height: 30,
     width: "18%",
     justifyContent: "center",
@@ -476,6 +502,9 @@ const styles = StyleSheet.create({
   showMoreButton: {
     backgroundColor: "#3498db",
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#2c3e50",
+
     height: 30,
     width: "70%",
     alignSelf: "flex-start",

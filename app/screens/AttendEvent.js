@@ -1,90 +1,43 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
   View,
-  Button,
-  Alert,
   Image,
-  Dimensions,
-  TextInput,
-  Pressable,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  FlatList,
-  SafeAreaView,
-  Touchable,
   StatusBar,
-  RefreshControl,
+  SafeAreaView,
+  ImageBackground,
+  Dimensions,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-
-import LoginScreen from "./LoginScreen";
-import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import firebase from "firebase/app";
-import "firebase/database";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import Icon from "react-native-vector-icons/FontAwesome";
 import {
   collection,
-  doc,
-  setDoc,
-  getDocs,
-  getDoc,
-  addDoc,
-  updateDoc,
   query,
-  arrayUnion,
+  getDocs,
+  updateDoc,
   where,
-  or,
 } from "firebase/firestore";
-import { db } from "../database/config";
-import { useRoute } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
 const AttendEvent = ({ navigation, route }) => {
-  const [user, setUser] = useState(null);
-  const { userEmail, eventName, isAuthenticated } = route.params || {};
-
-  //nav log
-  console.log("Attend event page");
+  const { eventName } = route.params || {};
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
-    const auth = getAuth();
+    getEmailData();
+  }, []);
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-
-      if (user && isAuthenticated && eventName) {
-        sendUserEmailToEvent(user.email);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [userEmail, eventName, isAuthenticated]);
-
-  const sendUserEmailToEvent = async (email) => {
+  const getEmailData = async () => {
     try {
-      const eventRef = collection(db, "Events");
-      const eventQuery = query(eventRef, where("eventName", "==", eventName));
-      const eventSnapshot = await getDocs(eventQuery);
-
-      if (eventSnapshot.docs.length > 0) {
-        const eventDoc = eventSnapshot.docs[0];
-        const attendeesArray = eventDoc.data().attendees || [];
-        attendeesArray.push(email);
-
-        await updateDoc(eventDoc.ref, { attendees: attendeesArray });
-
-        console.log("email added to the event");
-      } else {
-        console.log("no event with name:", eventName);
-      }
+      const value = await AsyncStorage.getItem("userEmail");
+      setUserEmail(value);
     } catch (error) {
-      console.error("Erro:", error);
+      console.error("Error reading email from AsyncStorage:", error);
     }
   };
 
@@ -94,23 +47,30 @@ const AttendEvent = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.appHead}>
-        <Text style={styles.titleText}>EventFinder</Text>
-        <Text style={styles.screenText}>Registration confirmation</Text>
-      </View>
-      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <Text style={styles.backButtonText}>{"< Back"}</Text>
-      </TouchableOpacity>
+      <ImageBackground
+        source={require("../assets/s.png")}
+        style={styles.backgroundImage}
+      >
+        <View style={styles.appHead}>
+          <Text style={styles.titleText}>EventFinder</Text>
+          <Text style={styles.screenText}>Registration confirmation</Text>
+        </View>
 
-      {user ? (
-        <Text style={styles.thankYouMessage}>
-          Thank you, <Text style={styles.eventName}>{user.email}</Text>, you are
-          now registered to attend the event,{" "}
-          <Text style={styles.eventName}>{eventName}</Text>
-        </Text>
-      ) : (
-        <Text>No user logged in</Text>
-      )}
+        <TouchableOpacity
+          style={styles.navButtons}
+          onPress={() => navigation.goBack()}
+        >
+          <Image
+            style={styles.navHomeImg}
+            source={require("../assets/left.png")}
+          />
+        </TouchableOpacity>
+      </ImageBackground>
+      <Text style={styles.thankYouMessage}>
+        Thank you, <Text style={styles.eventName}>{userEmail}</Text>, you are
+        now registered to attend the event,{" "}
+        <Text style={styles.eventName}>{eventName}!</Text>
+      </Text>
     </View>
   );
 };
@@ -118,7 +78,7 @@ const AttendEvent = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "lightgrey",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
@@ -138,6 +98,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#3498db",
   },
+  navButtons: { padding: 10 },
+  navHomeImg: { height: 30, width: 30, opacity: 1 },
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
@@ -148,11 +110,15 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   thankYouMessage: {
-    marginTop: StatusBar.currentHeight || 100,
-    fontSize: 25,
-    color: "#333",
+    fontSize: 45,
+    color: "#2c3e50",
     textAlign: "center",
     paddingHorizontal: 20,
+    marginTop: 20,
+  },
+  backgroundImage: {
+    height: screenHeight * 0.5,
+    width: screenWidth,
   },
   eventName: {
     fontWeight: "bold",

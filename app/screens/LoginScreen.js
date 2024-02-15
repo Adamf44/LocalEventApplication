@@ -31,10 +31,15 @@ import { set } from "firebase/database";
 import { auth } from "../database/config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-//for consistent styling
+//Globals
 const screenHeight = Dimensions.get("window").height;
 const screenWidth = Dimensions.get("window").width;
 
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////              Logic         /////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,9 +74,15 @@ function LoginScreen({ navigation }) {
     navigation.navigate("RegisterScreen");
   };
 
+  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////              UI            /////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Log In</Text>
+
       <TextInput
         value={email}
         onChangeText={(email) => setEmail(email)}
@@ -79,7 +90,6 @@ function LoginScreen({ navigation }) {
         placeholderTextColor={"#4f5250"}
         style={styles.input}
       />
-
       <TextInput
         value={password}
         onChangeText={(password) => setPassword(password)}
@@ -88,18 +98,23 @@ function LoginScreen({ navigation }) {
         placeholderTextColor={"#4f5250"}
         secureTextEntry={true}
       />
+
       <TouchableOpacity style={styles.button} onPress={signInUser}>
         <Text style={styles.buttonText}>Log in</Text>
       </TouchableOpacity>
-
       <Text>Don't have an account? Register below!</Text>
-
       <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
         <Text style={styles.registerButtonText}>Register</Text>
       </TouchableOpacity>
     </View>
-  );
-}
+  ); //end return
+} //end Login function
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////              Style         /////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
 const styles = StyleSheet.create({
   container: {

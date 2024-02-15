@@ -29,28 +29,51 @@ import {
 import { db } from "../database/config";
 import { useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-//nav log
-console.log("Show more screen");
-
+//Globals
 const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
+
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////              Logic         /////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
 const ShowMoreScreen = ({ navigation, route }) => {
   const [event, setEvent] = useState([]);
   const [comments, setComments] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const { isAuthenticated = false } = route.params || {};
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const eventName = route.params?.eventName;
   const [username, setUsername] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
-  console.log("User is authenticated on show more: " + isAuthenticated);
+  //use effect to control auth
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isAuthenticated) {
+      }
+    }, [isAuthenticated])
+  );
+  console.log("User is authenticated on home: " + isAuthenticated);
+  ////end auth
 
   useEffect(() => {
     console.log("eventName:", eventName);
     if (eventName) {
       fetchData();
-      fetchCommentData();
     }
   }, [eventName]);
   function fetchData() {
@@ -109,53 +132,51 @@ const ShowMoreScreen = ({ navigation, route }) => {
     });
   }
 
-  const fetchCommentData = async () => {
-    setIsRefreshing(true);
-    try {
-      const eventDoc = doc(db, "Events", eventName);
-      const eventSnap = await getDoc(eventDoc);
-      if (eventSnap.exists()) {
-        const commentsData = eventSnap.data().eventComments || [];
-        setComments(commentsData);
-      }
-    } catch (error) {
-      console.error("Error fetching comment data:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   const handleRefresh = () => {
     fetchData();
-    fetchCommentData();
   };
   const handleGoBack = () => {
     navigation.navigate("HomeScreen", { isAuthenticated });
   };
 
-  const handleAddComment = async () => {
-    if (!newComment.trim()) {
-      Alert.alert("Error", "Comment cannot be empty");
-      return;
-    }
-
-    const eventRef = doc(db, "Events", eventName);
-    console.log("Adding comment with username:", username);
-
-    await updateDoc(eventRef, {
-      eventComments: arrayUnion({
-        username: username,
-        content: newComment.trim(),
-      }),
-    });
-
-    fetchCommentData();
-    setNewComment("");
-  };
-
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
+
+  const handleAttend = (userEmail, eventName) => {
+    const eventRef = collection(db, "Events");
+    const eventQuery = query(eventRef, where("eventName", "==", eventName));
+
+    getDocs(eventQuery)
+      .then((querySnapshot) => {
+        if (querySnapshot.docs.length > 0) {
+          const eventDoc = querySnapshot.docs[0];
+          const attendeesArray = eventDoc.data().attendees || [];
+
+          if (!attendeesArray.includes(userEmail)) {
+            navigation.navigate("AttendEvent", {
+              userEmail,
+              eventName,
+              isAuthenticated,
+            });
+          } else {
+            Alert.alert(
+              "Already Registered",
+              "You have already registered for this event."
+            );
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking attendees:", error);
+      });
+  };
+
+  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////              UI            /////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////
 
   return (
     <View style={styles.container}>
@@ -173,30 +194,32 @@ const ShowMoreScreen = ({ navigation, route }) => {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <Text style={styles.backButtonText}>{"< Back"}</Text>
-      </TouchableOpacity>
-
       <View style={styles.flatListContainer}>
         <FlatList
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
           data={event}
           keyExtractor={(item) => item.eventName}
           renderItem={({ item }) => (
             <View style={styles.innerContainer}>
-              <Text style={styles.eventName}>{item.eventName}</Text>
+              <TouchableOpacity
+                style={styles.navButtons}
+                onPress={() => navigation.goBack()}
+              >
+                <Image
+                  style={styles.navHomeImg}
+                  source={require("../assets/left.png")}
+                />
+              </TouchableOpacity>
               {item.imageUrl && (
-                <Image source={{ uri: item.imageUrl }} style={styles.image} />
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={styles.eventImage}
+                />
               )}
+              <Text style={styles.eventName}>{item.eventName}</Text>
 
               <View style={styles.detailsContainer}>
                 <Text style={styles.eventLocation}>{item.eventLocation}</Text>
-                <Text style={styles.eventDate}>Date: {item.eventDate}</Text>
+                <Text style={styles.eventDate}>{item.eventDate}</Text>
                 <Text style={styles.eventDescription}>
                   {item.eventDescription}
                 </Text>
@@ -210,35 +233,41 @@ const ShowMoreScreen = ({ navigation, route }) => {
                   </Text>
                 </View>
 
-                <Text style={styles.eventStatus}>
+                <Text style={styles.infoBox}>
                   Event status: {item.eventStatus}
                 </Text>
-                <Text style={styles.regStatus}>
+                <Text style={styles.infoBox}>
                   Registration status: {item.registrationStatus}
                 </Text>
-                <Text style={styles.regDeadline}>
+                <Text style={styles.infoBox}>
                   Registration deadline: {item.registrationDeadline}
                 </Text>
 
-                <Text style={styles.attendeeCount}>
+                <Text style={styles.infoBox}>
                   Attendee count: {item.attendeeCount}
                 </Text>
 
-                <View style={styles.organiserContainer}>
-                  <Text style={styles.organizerName}>
-                    Name of organizer: {item.organizerName}
-                  </Text>
-                  <Text style={styles.organizerContact}>
-                    Contact {item.organizerName}: {item.organizerContact}
-                  </Text>
-                  <Text style={styles.organizerSocialMedia}>
-                    Find {item.organizerName} on social media:{" "}
-                    {item.organizerSocialMedia}
-                  </Text>
-                </View>
+                <Text style={styles.infoBox}>
+                  Name of organizer: {item.organizerName}
+                </Text>
+                <Text style={styles.infoBox}>
+                  Contact {item.organizerName}: {item.organizerContact}
+                </Text>
+                <Text style={styles.infoBox}>
+                  Find {item.organizerName} on social media:
+                  {item.organizerSocialMedia}
+                </Text>
 
-                <Text style={styles.county}>County: {item.eventCounty}</Text>
-                <Text style={styles.village}>Village: {item.eventVillage}</Text>
+                <Text style={styles.infoBox}>County: {item.eventCounty}</Text>
+                <Text style={styles.infoBox}>Village: {item.eventVillage}</Text>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.attendButton}
+                  onPress={() => handleAttend(userEmail, item.eventName)}
+                >
+                  <Text style={styles.attendButtonText}>Attend event</Text>
+                </TouchableOpacity>
               </View>
             </View>
           )}
@@ -248,13 +277,20 @@ const ShowMoreScreen = ({ navigation, route }) => {
   );
 };
 
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////              Style         /////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "lightgrey",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
@@ -266,8 +302,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   backButton: {
-    marginBottom: 16,
-    padding: 20,
+    padding: 10,
   },
   backButtonText: {
     fontSize: 16,
@@ -280,15 +315,13 @@ const styles = StyleSheet.create({
   },
   flatListContainer: {
     flex: 1,
-    padding: 16,
   },
   innerContainer: {
     borderWidth: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "lightgrey",
     borderColor: "#ddd",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 10,
+    padding: 10,
+    marginBottom: screenHeight * 0.1,
     width: screenWidth,
     alignSelf: "center",
     shadowColor: "#000",
@@ -297,7 +330,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-
+  navButtons: { padding: 10 },
+  navHomeImg: { height: 30, width: 30, opacity: 1 },
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
@@ -310,58 +344,62 @@ const styles = StyleSheet.create({
     padding: 15,
     width: 80,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   logInButtonText: {
     fontSize: 14,
     color: "#fff",
     fontWeight: "bold",
   },
-
-  image: {
-    width: "100%",
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  registerDetailsButtonText: {
+  attendButtonText: {
     fontSize: 12,
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
   },
-  registerDetailsButton: {
-    backgroundColor: "#3498db",
+  attendButton: {
+    backgroundColor: "#e74c3c",
     borderRadius: 8,
+    borderColor: "#2c3e50",
+    borderWidth: 1,
     height: 30,
+    justifyContent: "center",
     width: "70%",
     alignSelf: "flex-start",
-    justifyContent: "center",
+    marginTop: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  buttonContainer: {
+    flexDirection: "column",
+  },
+  username: {
+    fontSize: 12,
+    fontStyle: "italic",
+    color: "#2c3e50",
+    padding: 5,
+    marginBottom: 5,
+  },
+  ////////////////////////////////////////////////////////////
+  eventImage: {
+    width: "100%",
+    height: 120,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   eventName: {
     fontSize: 25,
     fontWeight: "bold",
-    color: "black",
+    color: "#2c3e50",
     marginBottom: 10,
     fontStyle: "italic",
   },
-  eventDescription: {
-    marginTop: 5,
-    fontSize: 14,
-    color: "#7f8c8d",
-    marginBottom: 12,
-  },
-  eventLocation: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#3498db",
-  },
-  eventDate: {
-    fontSize: 12,
-    marginTop: 5,
-    fontStyle: "italic",
-    fontWeight: "bold",
-    color: "#3498db",
-  },
+
   eventStartTime: {
     fontSize: 10,
     color: "white",
@@ -377,83 +415,28 @@ const styles = StyleSheet.create({
     padding: 5,
     width: "25%",
   },
-  username: {
-    fontSize: 12,
-    fontStyle: "italic",
-    color: "#e74c3c",
-    padding: 5,
-    marginBottom: 5,
-  },
-  postedTitle: {
-    fontSize: 12,
-    color: "#7f8c8d",
-    marginTop: 8,
-  },
-  eventTimeDateContainer: {
-    justifyContent: "space-between",
-    marginTop: 12,
-  },
-  eventTime: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#333",
-  },
-
-  organiserContainer: {
-    backgroundColor: "red",
-  },
-
-  commentTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-    marginTop: 12,
-  },
-  commentContainer: {
-    marginTop: 5,
-    //borderWidth: 1,
-    //borderColor: "#ddd",
-    //borderRadius: 5,
-    padding: 5,
-  },
-  commentHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  commentUsername: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#3498db",
-    marginRight: 8,
-  },
-  commentContent: {
-    fontSize: 10,
-    color: "#555",
-  },
-
   eventLocation: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#3498db",
+    color: "#2c3e50",
   },
   eventDate: {
     fontSize: 12,
     marginTop: 5,
     fontStyle: "italic",
     fontWeight: "bold",
-    color: "#3498db",
+    color: "#2c3e50",
   },
   eventDescription: {
     marginTop: 5,
     fontSize: 14,
-    color: "#7f8c8d",
+    color: "#2c3e50",
     marginBottom: 12,
   },
   timeContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 12,
+    margin: 10,
   },
   eventStartTime: {
     fontSize: 10,
@@ -471,105 +454,16 @@ const styles = StyleSheet.create({
     width: "45%",
     borderRadius: 8,
   },
-  eventStatus: {
-    fontSize: 10,
+  //////////////////////////////////////////////////////////////
+  infoBox: {
+    fontSize: 15,
     fontWeight: "bold",
-    color: "#000",
-    backgroundColor: "#fff",
+    color: "#2c3e50",
+    backgroundColor: "darkgrey",
     padding: 10,
-    borderRadius: 8,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 1,
   },
-
-  regStatus: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#000",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-
-  regDeadline: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#000",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-
-  attendeeCount: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#000",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-
-  organiserContainer: {
-    marginTop: 16,
-  },
-
-  organizerName: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#000",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-
-  organizerContact: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#000",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-
-  organizerSocialMedia: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#000",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-
-  county: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#000",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-
-  village: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: "#000",
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 16,
-    marginBottom: 8,
-  },
+  /////////////////////////////////////////////////////////////////
 });
 
 export default ShowMoreScreen;
