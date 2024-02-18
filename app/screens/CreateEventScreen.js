@@ -14,13 +14,20 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  uploadBytesResumable,
+} from "firebase/storage";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../database/config";
 import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Platform } from "react-native";
 import { unstable_renderSubtreeIntoContainer } from "react-dom";
+import mime from "mime";
 
 //Globals
 const screenWidth = Dimensions.get("window").width;
@@ -63,15 +70,25 @@ const CreateEventScreen = ({ navigation, route }) => {
       quality: 0,
     });
 
-    if (!result.canceled) {
-      const response = await fetch(result.uri);
-      const blob = await response.blob();
-      const storage = getStorage();
-      const storageRef = ref(storage, "event_images/" + eventName);
-      uploadBytes(storageRef, blob).then((snapshot) => {
-        console.log("Uploaded an image");
-      });
-      setEventImage(result.uri);
+    if (!result.cancelled) {
+      // Check if assets array exists and has at least one item
+      if (result.assets && result.assets.length > 0) {
+        // Access the first selected asset (assuming single selection)
+        const selectedAsset = result.assets[0];
+        // Assigning response to image user picked
+        const response = await fetch(selectedAsset.uri);
+        // Convert image to blob to be stored in firebase
+        const blob = await response.blob();
+        // Gets firebase storage info
+        const storage = getStorage();
+        // Upload image to firebase
+        const storageRef = ref(storage, "event_images/" + eventName);
+        uploadBytes(storageRef, blob).then((snapshot) => {
+          console.log("Uploaded a blob!");
+        });
+        // Set event image using the selected asset URI
+        setEventImage(selectedAsset.uri);
+      }
     }
   }
 
@@ -118,15 +135,18 @@ const CreateEventScreen = ({ navigation, route }) => {
         Alert.alert("Error", "All fields are required.");
         return;
       }
-
+      console.log("skncnckn");
       const response = await fetch(eventImage);
+
       const imageBlob = await response.blob();
+
       const storage = getStorage();
       const storageRef = ref(storage, "event_images/" + eventName);
 
-      await uploadBytes(storageRef, imageBlob);
+      await uploadBytesResumable(storageRef, imageBlob);
 
       const imageUrl = await getDownloadURL(storageRef);
+      console.log(" whistle wjhs" + imageUrl);
       const data = {
         eventName: eventName.trim(),
         eventDescription: eventDescription.trim(),
@@ -199,11 +219,11 @@ const CreateEventScreen = ({ navigation, route }) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : "heigh"}
     >
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
-        <Text style={styles.appHeadTitle}>Create Event</Text>
+        <Text style={styles.appHeadTitle}>Create An Event!</Text>
         <View style={styles.searchContainer}>
           {isAuthenticated ? null : (
             <TouchableOpacity
@@ -388,7 +408,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     fontSize: 20,
     fontWeight: "bold",
-    color: "#3498db",
+    color: "#2c3e50",
     marginTop: 10,
     marginBottom: 5,
   },
@@ -407,13 +427,13 @@ const styles = StyleSheet.create({
   },
   input: {
     alignSelf: "center",
-    width: "80%",
-    height: 40,
+    width: "90%",
+    height: 35,
     borderWidth: 1,
     borderColor: "black",
     marginBottom: 20,
     paddingHorizontal: 15,
-    borderRadius: 10,
+    borderRadius: 5,
     color: "#2c3e50",
     fontSize: 16,
     backgroundColor: "snow",

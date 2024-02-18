@@ -20,12 +20,14 @@ import { Button } from "react-native-web";
 import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+//Globals
 const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
 
 const ProfileScreen = ({ navigation, route }) => {
   const [userData, setUserData] = useState(null);
   const [username, setUsername] = useState("");
-  const [currentUserEmail, setCurrentUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -52,7 +54,7 @@ const ProfileScreen = ({ navigation, route }) => {
       try {
         const value = await AsyncStorage.getItem("userEmail");
         if (value !== null) {
-          setCurrentUserEmail(value);
+          setUserEmail(value);
 
           getDocs(
             query(collection(db, "Users"), where("email", "==", value))
@@ -103,7 +105,7 @@ const ProfileScreen = ({ navigation, route }) => {
     }
   };
   const handleBookmarkButton = async () => {
-    navigation.navigate("EventBookmarks", { currentUserEmail });
+    navigation.navigate("EventBookmarks", { userEmail });
   };
 
   const handleRefresh = () => {
@@ -111,38 +113,86 @@ const ProfileScreen = ({ navigation, route }) => {
     getUserAbout();
     setIsRefreshing(false);
   };
+
+  const handleLoginPress = () => {
+    navigation.navigate("LoginScreen");
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
-
-        <TouchableOpacity style={styles.headButton} onPress={handleLogout}>
-          <Text style={styles.logOutButtonText}>Log out</Text>
-        </TouchableOpacity>
+        <Text style={styles.appHeadTitle}>Profile page</Text>
+        <View style={styles.searchContainer}>
+          {isAuthenticated ? null : (
+            <TouchableOpacity
+              onPress={handleLoginPress}
+              style={styles.logInButton}
+            >
+              <Text style={styles.logInButtonText}>Log in</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-      <View style={styles.buttonCon1}>
-        <TouchableOpacity style={styles.eventButton}>
-          <Text style={styles.logOutButtonText}>Edit account</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.eventButton}
-          onPress={() => handleBookmarkButton(currentUserEmail)}
-        >
-          <Text style={styles.logOutButtonText}>Saved Events</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.eventButton}>
-          <Text style={styles.logOutButtonText}>Event history</Text>
-        </TouchableOpacity>
-      </View>
       <Text style={styles.usernameText}>Welcome, {username}!</Text>
       {userData &&
         userData.map((item) => (
           <View style={styles.innerContainer} key={item.username}>
-            <Text style={styles.fullName}>Full Name: {item.fullName}</Text>
-            <Text style={styles.userBio}>Bio: {item.userBio}</Text>
+            <Image
+              style={styles.proImg}
+              source={require("../assets/profile.png")}
+            />
+
+            <Text style={styles.fullName}>Name: {item.fullName}</Text>
+
+            <Text style={styles.userBio}>{item.userBio}</Text>
+            <Image
+              style={styles.lineSep}
+              source={require("../assets/horizontal-rule.png")}
+            />
             <Text style={styles.userEmail}>Email: {item.email}</Text>
+            <Image
+              style={styles.lineSep}
+              source={require("../assets/horizontal-rule.png")}
+            />
+            <Text style={styles.userEmail}>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas
+              in arcu id nunc sagittis varius ut et magna. Orci varius natoque
+              penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+              Ut hendrerit porttitor lorem non condimentum. Nullam non lectus at
+              turpis vestibulum mollis. Donec condimentum velit at malesuada
+              tincidunt. Nam blandit lorem sit amet egestas aliquam. Aliquam
+              varius pharetra mi, in imperdiet neque aliquet vel. Etiam a orci
+              quis quam ultricies iaculis. Praesent tempus augue vel risus
+              hendrerit gravida.{" "}
+            </Text>
+
+            <View style={styles.buttonCon1}>
+              <TouchableOpacity
+                style={styles.savedEventButton}
+                onPress={() => handleBookmarkButton(userEmail)}
+              >
+                <Image
+                  style={styles.butImg}
+                  source={require("../assets/bookmark.png")}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.eventHistoryButton}>
+                <Image
+                  style={styles.butImg}
+                  source={require("../assets/time-past.png")}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.editButton}>
+                <Image
+                  style={styles.butImg}
+                  source={require("../assets/user-pen.png")}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         ))}
 
@@ -156,14 +206,14 @@ const ProfileScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "lightgrey",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 16,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
     backgroundColor: "#3498db",
@@ -171,8 +221,86 @@ const styles = StyleSheet.create({
   buttonCon1: {
     flexDirection: "row",
     justifyContent: "center",
+    marginHorizontal: 10,
+    marginTop: "10%",
+  },
+  proImg: {
+    width: 100,
+    height: 100,
+    opacity: 0.4,
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
   },
 
+  line: {
+    height: 2,
+    backgroundColor: "#3498db",
+    marginVertical: 5,
+  },
+  lines: {
+    height: 20,
+    width: 100,
+  },
+  lineSep: {
+    height: 5,
+    width: screenWidth * 0.9,
+    opacity: 0.1,
+    alignSelf: "center",
+  },
+  logInButton: {
+    backgroundColor: "#e74c3c",
+    borderRadius: 8,
+    padding: 15,
+    width: 80,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  logInButtonText: {
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  sectionTitle: {
+    alignSelf: "center",
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#3498db",
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  navHomeImg: {
+    opacity: 1,
+    height: "20%",
+    width: "40%",
+  },
+  butImg: {
+    opacity: 1,
+    height: 30,
+    width: 30,
+  },
+  appHeadTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "snow",
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  title: {
+    fontSize: 24,
+    color: "#3498db",
+    marginBottom: 20,
+    fontWeight: "bold",
+  },
   headButton: {
     backgroundColor: "#e74c3c",
     marginRight: "5%",
@@ -185,8 +313,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  eventButton: {
+  eventHistoryButton: {
+    backgroundColor: "#f39c12",
+    margin: "5%",
+    borderRadius: 8,
+    padding: 12,
+    width: "25%",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  savedEventButton: {
     backgroundColor: "#e74c3c",
+    margin: "5%",
+    borderRadius: 8,
+    padding: 12,
+    width: "25%",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  editButton: {
+    backgroundColor: "#2ecc71",
     margin: "5%",
     borderRadius: 8,
     padding: 12,
@@ -222,7 +374,7 @@ const styles = StyleSheet.create({
   userBio: {
     fontSize: 14,
     color: "#555",
-    marginBottom: 12,
+    margin: 10,
   },
   eventTimeDateContainer: {
     justifyContent: "space-between",
@@ -260,30 +412,28 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
   },
-  usernameText: {
-    marginTop: 10,
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2c3e50",
-  },
+
   userProfileContainer: {
     flex: 1,
     backgroundColor: "#fff",
     padding: 16,
   },
   usernameText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#3498db",
-    marginBottom: 16,
+    alignSelf: "center",
+    padding: 10,
+    fontSize: 25,
+    textDecorationLine: "underline",
+    opacity: 0.5,
+    marginBottom: 5,
+    color: "#2c3e50",
   },
   innerContainer: {
-    borderWidth: 1,
-    backgroundColor: "#FFFFFF",
-    borderColor: "#ddd",
-    borderRadius: 12,
+    backgroundColor: "snow",
+    alignSelf: "center",
     padding: 16,
     marginBottom: 20,
+    width: screenWidth * 0.9,
+    height: screenHeight,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -291,19 +441,22 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   fullName: {
-    fontSize: 16,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#2c3e50",
-    marginBottom: 8,
+    fontStyle: "italic",
+    paddingBottom: 10,
+    paddingTop: 10,
   },
   userBio: {
     fontSize: 14,
     color: "#7f8c8d",
-    marginBottom: 8,
+    margin: 10,
   },
   userEmail: {
     fontSize: 14,
     color: "#7f8c8d",
+    margin: 10,
   },
 });
 

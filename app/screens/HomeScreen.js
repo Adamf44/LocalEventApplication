@@ -336,7 +336,7 @@ const HomeScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "lightgrey",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
