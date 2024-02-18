@@ -41,8 +41,10 @@ import {
 } from "firebase/firestore";
 import { db } from "../database/config";
 import { useRoute } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
 
 const CommentSection = ({ navigation, route }) => {
   const [event, setEvent] = useState([]);
@@ -51,24 +53,26 @@ const CommentSection = ({ navigation, route }) => {
   const [newComment, setNewComment] = useState("");
   const eventName = route.params?.eventName;
   const [username, setUser] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
-  //nav log
-  console.log("Comment screen");
-
+  //use effect to control auth
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-
-      console.log("user:" + userEmail);
-
-      if (user && isAuthenticated && eventName) {
-        //figure out
-      }
+      setIsAuthenticated(!!user);
     });
 
     return () => unsubscribe();
-  }, [userEmail, eventName, isAuthenticated]);
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isAuthenticated) {
+      }
+    }, [isAuthenticated])
+  );
+  console.log("User is authenticated on comment: " + isAuthenticated);
 
   useEffect(() => {
     console.log("event name:", eventName);
@@ -78,65 +82,48 @@ const CommentSection = ({ navigation, route }) => {
     }
   }, [eventName]);
 
-  function fetchData() {
+  //function to get Event data
+  const fetchData = async () => {
     setIsRefreshing(true);
-    getDocs(
-      query(collection(db, "Events"), where("eventName", "==", eventName))
-    ).then((docSnap) => {
-      let info = [];
-      docSnap.forEach((doc) => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "Events"));
+      let events = [];
+      querySnapshot.forEach((doc) => {
         const {
           eventName,
-          category,
           eventDate,
-          eventDescription,
-          eventStartTime,
-          eventEndTime,
-          eventLocation,
-          username,
+          eventVillage,
+          communityName,
           imageUrl,
-          eventStatus,
-          registrationStatus,
-          registrationDeadline,
-          eventTags,
-          attendeeCount,
-          organizerName,
-          organizerContact,
           organizerSocialMedia,
-          eventComments,
         } = doc.data();
-
-        info.push({
-          ...doc.data(),
-          id: doc.id,
-          eventName,
-          category,
-          eventDate,
-          eventDescription,
-          eventStartTime,
-          eventEndTime,
-          eventLocation,
-          username,
-          imageUrl,
-          eventStatus,
-          registrationStatus,
-          registrationDeadline,
-          eventTags,
-          attendeeCount,
-          organizerName,
-          organizerContact,
-          organizerSocialMedia,
-          eventComments,
-        });
+        //if '!communityName' to check it is not a community event(As they are private to a user and who they invite)
+        if (!communityName) {
+          events.push({
+            id: doc.id,
+            eventName,
+            eventDate,
+            eventVillage,
+            communityName,
+            imageUrl,
+            organizerSocialMedia,
+          });
+        }
       });
 
-      setEvent(info);
-    });
-  }
+      setEvent(events);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const fetchCommentData = async () => {
     setIsRefreshing(true);
     try {
+      const userEmail = await AsyncStorage.getItem("userEmail");
+
       const eventDoc = doc(db, "Events", eventName);
       const eventSnap = await getDoc(eventDoc);
       if (eventSnap.exists()) {
@@ -151,7 +138,6 @@ const CommentSection = ({ navigation, route }) => {
   };
 
   const handleRefresh = () => {
-    fetchData();
     fetchCommentData();
   };
 
@@ -161,18 +147,38 @@ const CommentSection = ({ navigation, route }) => {
       return;
     }
 
-    const eventRef = doc(db, "Events", eventName);
+    try {
+      const userEmail = await AsyncStorage.getItem("userEmail");
 
-    await updateDoc(eventRef, {
-      eventComments: arrayUnion({
-        username: username,
-        content: newComment.trim(),
-      }),
-    });
+      // Retrieve the username associated with the userEmail
+      const userSnapshot = await getDocs(
+        query(collection(db, "Users"), where("email", "==", userEmail))
+      );
 
-    fetchCommentData();
+      // Check if the user document exists
+      if (!userSnapshot.empty) {
+        const userData = userSnapshot.docs[0].data();
+        const username = userData.username;
 
-    setNewComment("");
+        // Add the comment with the retrieved username
+        const eventRef = doc(db, "Events", eventName);
+        await updateDoc(eventRef, {
+          eventComments: arrayUnion({
+            username: username,
+            content: newComment.trim(),
+          }),
+        });
+
+        // Fetch updated comment data
+        fetchCommentData();
+        setNewComment("");
+      } else {
+        Alert.alert("User not found", "Cannot add comment without user data");
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      Alert.alert("Error", "Failed to add comment");
+    }
   };
 
   const handleLoginPress = () => {
@@ -199,26 +205,35 @@ const CommentSection = ({ navigation, route }) => {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <Text style={styles.backButtonText}>{"< Back"}</Text>
-      </TouchableOpacity>
-
-      <View style={styles.innerContainer}>
+      <View style={styles.eventContainer}>
+        <TouchableOpacity
+          style={styles.bButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Image
+            style={styles.bButtonImg}
+            source={require("../assets/left.png")}
+          />
+        </TouchableOpacity>
         <Text style={styles.eventName}>
           {event.length > 0 && event[0].eventName}
         </Text>
         {event.length > 0 && event[0].imageUrl && (
           <Image source={{ uri: event[0].imageUrl }} style={styles.image} />
         )}
-        <Text style={styles.eventLocation}>
-          {event.length > 0 && event[0].eventLocation}
-        </Text>
-        <Text style={styles.eventDate}>
-          Date: {event.length > 0 && event[0].eventDate}
-        </Text>
+        <View style={styles.eventInfo}>
+          <Text style={styles.eventVillage}>
+            {event.length > 0 && event[0].eventVillage}
+          </Text>
+          <Text style={styles.eventDate}>
+            Date: {event.length > 0 && event[0].eventDate}
+          </Text>
+          <Text style={styles.organizerSocialMedia}>
+            Poster: {event.length > 0 && event[0].organizerSocialMedia}
+          </Text>
+        </View>
       </View>
-
-      <View style={styles.flatListCommentContainer}>
+      <View style={styles.commentFlatListContainer}>
         <FlatList
           refreshControl={
             <RefreshControl
@@ -229,32 +244,28 @@ const CommentSection = ({ navigation, route }) => {
           data={comments}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => (
-            <View key={index} style={styles.commentContainer}>
-              <View style={styles.commentHeader}>
-                <Text style={styles.commentUsername}>{username}:</Text>
-              </View>
-              <View style={styles.commentContent}>
-                <Text>{item.content}</Text>
-              </View>
-            </View>
+            //start of inner flatlist content
+            <View key={index} style={styles.innerCommentContainer}>
+              <Text style={styles.commentUsername}>{item.username}:</Text>
+
+              <Text style={styles.content}>{item.content}</Text>
+              <Image
+                style={styles.lineImg}
+                source={require("../assets/horizontal-rule.png")}
+              />
+            </View> //end inner 'comment' container
           )}
         />
-
-        <View style={styles.commentButtonContainer}>
-          <TextInput
-            style={styles.eventCommentInput}
-            placeholder="Leave a comment.."
-            value={newComment}
-            onChangeText={(text) => setNewComment(text)}
-          />
-          <TouchableOpacity
-            style={styles.commentButton}
-            onPress={handleAddComment}
-          >
-            <Text style={styles.commentButtonText}>Add Comment</Text>
-          </TouchableOpacity>
-        </View>
       </View>
+      <TextInput
+        style={styles.eventCommentInput}
+        placeholder="Leave a comment.."
+        value={newComment}
+        onChangeText={(text) => setNewComment(text)}
+      />
+      <TouchableOpacity style={styles.commentButton} onPress={handleAddComment}>
+        <Text style={styles.commentButtonText}>Add Comment</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -262,10 +273,11 @@ const CommentSection = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
+    backgroundColor: "snow",
     marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
+    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
@@ -273,60 +285,51 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
     backgroundColor: "#3498db",
   },
-  line: {
-    height: 2,
-    backgroundColor: "#3498db",
-    marginVertical: 5,
-  },
-  flatListContainer: {
-    flex: 1,
-  },
-  flatListCommentContainer: {
-    flex: 1,
-  },
-  backButton: {
-    marginBottom: 16,
+  eventContainer: {
+    flexDirection: "column",
+    backgroundColor: "snow",
+    width: screenWidth + 20,
     padding: 20,
   },
-  backButtonText: {
-    fontSize: 16,
-    color: "#3498db",
+
+  bButton: { padding: 10 },
+
+  bButtonImg: {
+    height: 30,
+    width: 30,
+    opacity: 1,
   },
-  innerContainer: {
-    borderWidth: 1,
-    backgroundColor: "#fff",
-    borderColor: "#ddd",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 10,
-    width: screenWidth + 20,
-    alignSelf: "center",
+  lineImg: {},
+  commentFlatListContainer: {
+    flex: 1,
+    backgroundColor: "lightgrey",
   },
+
   innerCommentContainer: {
+    margin: 20,
     borderWidth: 1,
-    backgroundColor: "#fff",
-    borderColor: "#ddd",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 10,
-    width: screenWidth * 0.9,
+    borderColor: "snow",
+    backgroundColor: "#3498db",
     alignSelf: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    width: screenWidth * 0.9,
   },
+
   commentButton: {
     backgroundColor: "#2ecc71",
     borderRadius: 8,
     height: 35,
     width: "40%",
     justifyContent: "center",
-    marginTop: 10,
-    marginBottom: 10,
+    marginBottom: 100,
+  },
+  content: {
+    fontSize: 12,
+    paddingLeft: 5,
+    fontWeight: "bold",
+    color: "#fff",
   },
   commentButtonContainer: {
+    backgroundColor: "lightgrey",
     justifyContent: "space-between",
     alignItems: "center",
   },
@@ -389,26 +392,25 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "50%",
-    height: 100,
+    alignSelf: "flex-end",
+    height: 80,
     borderRadius: 8,
-    marginBottom: 12,
+    marginRight: "5%",
+  },
+  eventInfo: {
+    marginTop: -55,
   },
   eventName: {
-    fontSize: 25,
-    fontWeight: "bold",
+    fontSize: 20,
     color: "black",
-    marginBottom: 10,
     fontStyle: "italic",
   },
   eventDescription: {
-    marginTop: 5,
-    fontSize: 14,
+    fontSize: 10,
     color: "#7f8c8d",
-    marginBottom: 12,
   },
   eventDate: {
-    fontSize: 12,
-    marginTop: 5,
+    fontSize: 10,
     fontStyle: "italic",
     fontWeight: "bold",
     color: "#3498db",
@@ -439,14 +441,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   commentUsername: {
+    padding: 5,
     fontSize: 10,
-    fontWeight: "bold",
-    color: "#3498db",
-    marginRight: 8,
-  },
-  commentContent: {
-    fontSize: 10,
-    color: "#555",
+    color: "snow",
   },
 });
 

@@ -151,6 +151,7 @@ const HomeScreen = ({ navigation, route }) => {
       const eventRef = doc(db, "Events", eventName);
       const eventDoc = await getDoc(eventRef);
 
+      //get bookmarkedBy attribute for the event eventName
       if (eventDoc.exists()) {
         let { bookmarkedBy } = eventDoc.data();
 
@@ -158,11 +159,12 @@ const HomeScreen = ({ navigation, route }) => {
           bookmarkedBy = [];
         }
 
+        //check if users email is in bookmarkedBy already
         if (!bookmarkedBy.includes(userEmail)) {
+          //if not add
           await updateDoc(eventRef, {
             bookmarkedBy: arrayUnion(userEmail),
           });
-
           Alert.alert("Event Bookmarked", "This event has been bookmarked.");
         } else {
           Alert.alert("Already Bookmarked", "Already bookmarked this event.");
@@ -173,16 +175,18 @@ const HomeScreen = ({ navigation, route }) => {
           "The event you are trying to bookmark does not exist."
         );
       }
+      //error for bookmark
     } catch (error) {
       console.error("Error bookmarking event:", error.message);
     }
   };
 
+  //show more
   const handleShowMorePress = (eventName) => {
     console.log("handleShowMorePress called with eventName:", eventName);
     navigation.navigate("ShowMoreScreen", { eventName, isAuthenticated });
   };
-
+  //attend event
   const handleAttend = (userEmail, eventName) => {
     const eventRef = collection(db, "Events");
     const eventQuery = query(eventRef, where("eventName", "==", eventName));
@@ -211,7 +215,7 @@ const HomeScreen = ({ navigation, route }) => {
         console.error("Error checking attendees:", error);
       });
   };
-  const handleComment = (eventName) => {
+  const handleComment = (eventName, userEmail) => {
     navigation.navigate("CommentSection", {
       eventName,
       userEmail,
