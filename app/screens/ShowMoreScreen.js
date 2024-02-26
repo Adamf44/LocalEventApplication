@@ -50,6 +50,7 @@ const ShowMoreScreen = ({ navigation, route }) => {
   const eventName = route.params?.eventName;
   const [username, setUsername] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [NameInAttendee, setNameInAttendee] = useState(false);
 
   //use effect to control auth
   useEffect(() => {
@@ -262,12 +263,14 @@ const ShowMoreScreen = ({ navigation, route }) => {
                 <Text style={styles.infoBox}>Village: {item.eventVillage}</Text>
               </View>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.attendButton}
-                  onPress={() => handleAttend(userEmail, item.eventName)}
-                >
-                  <Text style={styles.attendButtonText}>Attend event</Text>
-                </TouchableOpacity>
+                {NameInAttendee ? null : (
+                  <TouchableOpacity
+                    style={styles.attendButton}
+                    onPress={() => handleAttend(userEmail, item.eventName)}
+                  >
+                    <Text style={styles.attendButtonText}>Attend event</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           )}

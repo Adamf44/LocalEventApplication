@@ -65,29 +65,36 @@ const HomeScreen = ({ navigation, route }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredEvents, setFilteredEvent] = useState([]); // Step 1: State for filtered events
 
-  //use effect to control auth
+  //use effect to get auth status
   useEffect(() => {
+    fetchData();
+
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
+      if (user) {
+        console.log("User is authenticated on home screen.");
+      }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [setIsAuthenticated]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!isAuthenticated) {
-      }
-    }, [isAuthenticated])
-  );
-  console.log("User is authenticated on home: " + isAuthenticated);
-
-  //get initial data
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // Function to filter events based on the search query
+  const filterEvents = (query) => {
+    const filteredEvents = event.filter((item) =>
+      item.eventName.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredEvent(filteredEvents);
+  };
+  // Function to handle changes in the search input
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    filterEvents(query); // Step 2: Call function to filter events
+  };
 
   //function to get Event data
   const fetchData = async () => {
@@ -141,11 +148,11 @@ const HomeScreen = ({ navigation, route }) => {
   const handleRefresh = () => {
     fetchData();
   };
-
+  // not in use but could be
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
-
+  //when user bookmarks event
   const handleBookmark = async (eventName) => {
     try {
       const eventRef = doc(db, "Events", eventName);
@@ -215,6 +222,7 @@ const HomeScreen = ({ navigation, route }) => {
         console.error("Error checking attendees:", error);
       });
   };
+  // comment event button, go to commentsection
   const handleComment = (eventName, userEmail) => {
     navigation.navigate("CommentSection", {
       eventName,
@@ -234,7 +242,12 @@ const HomeScreen = ({ navigation, route }) => {
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
         <View style={styles.searchContainer}>
-          <TextInput placeholder="Search..." style={styles.searchBar} />
+          <TextInput
+            placeholder="Search..."
+            style={styles.searchBar}
+            onChangeText={handleSearch}
+            value={searchQuery}
+          />
           {isAuthenticated ? null : (
             <TouchableOpacity
               onPress={handleLoginPress}
@@ -245,7 +258,6 @@ const HomeScreen = ({ navigation, route }) => {
           )}
         </View>
       </View>
-
       <View style={styles.flatListContainer}>
         <FlatList
           refreshControl={
@@ -254,7 +266,7 @@ const HomeScreen = ({ navigation, route }) => {
               onRefresh={handleRefresh}
             />
           }
-          data={event}
+          data={filteredEvents} // Step 3: Use filtered events as data source
           keyExtractor={(item) => item.eventName}
           renderItem={({ item }) => (
             <View style={styles.innerContainer}>
@@ -341,23 +353,55 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "lightgrey",
-    marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    padding: 10,
     backgroundColor: "#3498db",
+    height: "13%",
+    marginTop: "0%",
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
   },
 
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "5%",
+  },
+
+  image: {
+    width: "90%",
+    height: 180,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+
+  searchBar: {
+    backgroundColor: "snow",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    height: "45%",
+    width: screenWidth * 0.5,
+    borderColor: "#bdc3c7",
+    borderWidth: 1,
+    fontSize: 15,
+    color: "#2c3e50",
+  },
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////// Event style ; //////////////////////////////////////////////////////////////////
   flatListContainer: {
     flex: 1,
-    padding: 16,
   },
   innerContainer: {
+    marginTop: "5%",
     borderWidth: 2,
     backgroundColor: "snow",
     borderColor: "darkgrey",
@@ -378,21 +422,68 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10,
   },
-  buttonContainer: {
-    flexDirection: "column",
-  },
-
-  trendText: {
-    color: "#e74c3c",
-    padding: 16,
+  postedTitle: {
     fontSize: 15,
+    color: "#7f8c8d",
+    marginTop: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  poster: {
+    flex: 1,
+    padding: 5,
+  },
+  username: {
+    fontSize: 11,
+    fontStyle: "italic",
+    color: "#e74c3c",
+    padding: 5,
+    marginBottom: 5,
+  },
+  eventName: {
+    fontSize: 22,
+    color: "#2c3e50",
     fontStyle: "italic",
   },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "snow",
+  eventDescription: {
+    marginTop: 5,
+    fontSize: 14,
+    color: "#7f8c8d",
+    marginBottom: 12,
   },
+  eventLocation: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2c3e50",
+  },
+  eventDate: {
+    fontSize: 12,
+    marginTop: 5,
+    fontStyle: "italic",
+    fontWeight: "bold",
+    color: "#3498db",
+  },
+
+  eventStartTime: {
+    fontSize: 10,
+    color: "white",
+    backgroundColor: "#3498db",
+    padding: 5,
+    width: "25%",
+  },
+  eventEndTime: {
+    marginTop: 5,
+    fontSize: 10,
+    color: "white",
+    backgroundColor: "#e74c3c",
+    padding: 5,
+    width: "25%",
+  },
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////  Buttons style ;    ////////////////////////////////////////////////////////////////////
 
   logInButton: {
     backgroundColor: "#e74c3c",
@@ -410,35 +501,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+  //event buttons:
+  buttonContainer: {
+    flexDirection: "column",
   },
-  searchBar: {
-    backgroundColor: "snow",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    height: 40,
-    width: screenWidth * 0.3,
-    borderColor: "#bdc3c7",
-    borderWidth: 1,
-    fontSize: 16,
-    color: "#2c3e50",
-    marginRight: 10,
-  },
-  image: {
-    width: "90%",
-    height: 180,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  attendButtonText: {
-    fontSize: 12,
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-  },
+
   attendButton: {
     backgroundColor: "#e74c3c",
     borderRadius: 8,
@@ -453,6 +520,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+  },
+  attendButtonText: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
   },
   commentButton: {
     backgroundColor: "#2ecc71",
@@ -508,7 +581,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#2c3e50",
-
     height: 30,
     width: "70%",
     alignSelf: "flex-start",
@@ -523,67 +595,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
-  },
-
-  postedTitle: {
-    fontSize: 15,
-    color: "#7f8c8d",
-    marginTop: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  poster: {
-    flex: 1,
-    padding: 5,
-  },
-  username: {
-    fontSize: 11,
-    fontStyle: "italic",
-    color: "#e74c3c",
-    padding: 5,
-    marginBottom: 5,
-  },
-  eventName: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#2c3e50",
-    fontStyle: "italic",
-  },
-  eventDescription: {
-    marginTop: 5,
-    fontSize: 14,
-    color: "#7f8c8d",
-    marginBottom: 12,
-  },
-  eventLocation: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#3498db",
-  },
-  eventDate: {
-    fontSize: 12,
-    marginTop: 5,
-    fontStyle: "italic",
-    fontWeight: "bold",
-    color: "#3498db",
-  },
-
-  eventStartTime: {
-    fontSize: 10,
-    color: "white",
-    backgroundColor: "#3498db",
-    padding: 5,
-    width: "25%",
-  },
-  eventEndTime: {
-    marginTop: 5,
-    fontSize: 10,
-    color: "white",
-    backgroundColor: "#e74c3c",
-    padding: 5,
-    width: "25%",
   },
 });
 

@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Dimensions,
+  StatusBar,
   Alert,
 } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -81,31 +82,40 @@ function LoginScreen({ navigation }) {
   /////////////////////////////////////////////////////////////////////////////////////
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Log In</Text>
+      <View style={styles.appHead}>
+        <Text style={styles.titleText}>EventFinder</Text>
+        <Text style={styles.appHeadTitle}>Login to your account</Text>
+      </View>
 
-      <TextInput
-        value={email}
-        onChangeText={(email) => setEmail(email)}
-        placeholder="Email"
-        placeholderTextColor={"#4f5250"}
-        style={styles.input}
-      />
-      <TextInput
-        value={password}
-        onChangeText={(password) => setPassword(password)}
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor={"#4f5250"}
-        secureTextEntry={true}
-      />
-
-      <TouchableOpacity style={styles.button} onPress={signInUser}>
-        <Text style={styles.buttonText}>Log in</Text>
-      </TouchableOpacity>
-      <Text>Don't have an account? Register below!</Text>
-      <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
-        <Text style={styles.registerButtonText}>Register</Text>
-      </TouchableOpacity>
+      <View style={styles.loginContainer}>
+        <TextInput
+          value={email}
+          onChangeText={(email) => setEmail(email)}
+          placeholder="Email"
+          placeholderTextColor={"#4f5250"}
+          style={styles.input}
+        />
+        <TextInput
+          value={password}
+          onChangeText={(password) => setPassword(password)}
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor={"#4f5250"}
+          secureTextEntry={true}
+        />
+      </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={signInUser}>
+          <Text style={styles.buttonText}>Log in</Text>
+        </TouchableOpacity>
+        <Text>Don't have an account? Register below!</Text>
+        <TouchableOpacity
+          onPress={handleRegister}
+          style={styles.registerButton}
+        >
+          <Text style={styles.registerButtonText}>Register</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   ); //end return
 } //end Login function
@@ -119,9 +129,38 @@ function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    backgroundColor: "lightgrey",
+    marginTop: StatusBar.currentHeight || 40,
+  },
+  appHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#fff",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    backgroundColor: "#3498db",
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+  },
+  appHeadTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "snow",
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  loginContainer: {
+    flex: 1,
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  buttonContainer: {
+    alignItems: "center",
+    flex: 1,
   },
   title: {
     padding: 10,
@@ -131,10 +170,8 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "80%",
-    height: 50,
     borderWidth: 1,
     borderColor: "#bdc3c7",
-    marginBottom: 20,
     paddingHorizontal: 15,
     borderRadius: 10,
     color: "#2c3e50",

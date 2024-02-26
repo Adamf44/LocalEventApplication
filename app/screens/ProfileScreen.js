@@ -31,28 +31,24 @@ const ProfileScreen = ({ navigation, route }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  //use effect to control auth
+  //use effect to get auth status
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
+      if (user) {
+        console.log("User is authenticated on profile screen.");
+      }
     });
 
     return () => unsubscribe();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!isAuthenticated) {
-      }
-    }, [isAuthenticated])
-  );
-  console.log("User is authenticated on notifications: " + isAuthenticated);
+  }, [setIsAuthenticated]);
 
   useEffect(() => {
     const getUserAbout = async () => {
       try {
         const value = await AsyncStorage.getItem("userEmail");
+        setUserEmail(value);
         if (value !== null) {
           setUserEmail(value);
 
@@ -106,6 +102,10 @@ const ProfileScreen = ({ navigation, route }) => {
   };
   const handleBookmarkButton = async () => {
     navigation.navigate("EventBookmarks", { userEmail });
+  };
+
+  const handleEditAccount = async () => {
+    navigation.navigate("EditAccountScreen", { userEmail });
   };
 
   const handleRefresh = () => {
@@ -179,14 +179,10 @@ const ProfileScreen = ({ navigation, route }) => {
                 />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.eventHistoryButton}>
-                <Image
-                  style={styles.butImg}
-                  source={require("../assets/time-past.png")}
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.editButton}>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => handleEditAccount(userEmail)}
+              >
                 <Image
                   style={styles.butImg}
                   source={require("../assets/user-pen.png")}
@@ -195,10 +191,6 @@ const ProfileScreen = ({ navigation, route }) => {
             </View>
           </View>
         ))}
-
-      {userData && userData.length === 0 && (
-        <Text style={styles.noDataText}>No user data</Text>
-      )}
     </View>
   );
 };

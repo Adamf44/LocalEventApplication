@@ -56,23 +56,17 @@ const CommentSection = ({ navigation, route }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
-  //use effect to control auth
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
+      if (user) {
+        console.log("User is authenticated on comment.");
+      }
     });
 
     return () => unsubscribe();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!isAuthenticated) {
-      }
-    }, [isAuthenticated])
-  );
-  console.log("User is authenticated on comment: " + isAuthenticated);
+  }, [setIsAuthenticated]);
 
   useEffect(() => {
     console.log("event name:", eventName);

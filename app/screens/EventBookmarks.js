@@ -14,67 +14,110 @@ import {
 } from "react-native";
 import { getDocs, query, collection, where } from "firebase/firestore";
 import { db } from "../database/config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/FontAwesome";
-
-//nav log
-console.log("Event bookmark page");
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
 
 const EventBookmarks = ({ navigation, route }) => {
-  const { currentUserEmail } = route.params || {};
+  const [userEmail, setUserEmail] = useState("");
+  const [eventName, setEventName] = useState("");
+  const [category, setCategory] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [eventDescription, setEventDescription] = useState("");
+  const [eventStartTime, setEventStartTime] = useState("");
+  const [eventEndTime, setEventEndTime] = useState("");
+  const [eventLocation, setEventLocation] = useState("");
+  const [eventPic, setEventPic] = useState(".");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [bookmarkedEvents, setBookmarkedEvents] = useState([]);
 
+  //use effect to get auth status
   useEffect(() => {
-    const fetchBookmarkedEvents = async () => {
-      try {
-        const querySnapshot = await getDocs(
-          query(
-            collection(db, "Events"),
-            where("bookmarkedBy", "array-contains", currentUserEmail)
-          )
-        );
-
-        if (querySnapshot.docs) {
-          const events = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-
-          setBookmarkedEvents(events);
-        } else {
-          setBookmarkedEvents([]);
-        }
-      } catch (error) {
-        console.error("Error fetching bookmarked events:", error.message);
-        Alert.alert("Error", "Failed to fetch bookmarked events.");
-      }
-    };
-
     fetchBookmarkedEvents();
-  }, [currentUserEmail]);
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+      if (user) {
+        console.log("User is authenticated on home screen.");
+      }
+    });
 
+    return () => unsubscribe();
+  }, [setIsAuthenticated]);
+
+  ///////////
+
+  //function to get Event data
+  const fetchBookmarkedEvents = async () => {
+    setIsRefreshing(true);
+    try {
+      const userEmail = await AsyncStorage.getItem("userEmail");
+      setUserEmail(userEmail);
+      const querySnapshot = await getDocs(
+        collection(db, "Events"),
+        where("bookmarkedBy", "array-contains", userEmail)
+      );
+      let events = [];
+      querySnapshot.forEach((doc) => {
+        const {
+          eventName,
+          category,
+          eventDate,
+          eventDescription,
+          eventStartTime,
+          eventEndTime,
+          eventLocation,
+          eventCounty,
+          eventVillage,
+          communityName,
+          username,
+          imageUrl,
+        } = doc.data();
+        //if '!communityName' to check it is not a community event(As they are private to a user and who they invite)
+        if (!communityName) {
+          events.push({
+            id: doc.id,
+            eventName,
+            category,
+            eventDate,
+            eventDescription,
+            eventStartTime,
+            eventEndTime,
+            eventLocation,
+            eventCounty,
+            eventVillage,
+            username,
+            imageUrl,
+          });
+        }
+      });
+
+      setBookmarkedEvents(events);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  ///////////
+
+  //show more
   const handleShowMorePress = (eventName) => {
     console.log("handleShowMorePress called with eventName:", eventName);
-    navigation.navigate("ShowMoreScreen", { eventName });
+    navigation.navigate("ShowMoreScreen", { eventName, isAuthenticated });
   };
   const handleGoBack = () => {
     navigation.navigate("ProfileScreen");
   };
 
-  const renderEventItem = ({ item }) => (
-    <View style={styles.innerContainer}>
-      <Text style={styles.eventName}>"{item.eventName}"</Text>
-      <Text style={styles.eventLocation}>{item.eventLocation}</Text>
-      <Text style={styles.eventDate}>{item.eventDate}</Text>
-      <TouchableOpacity
-        style={styles.showMoreButton}
-        onPress={() => handleShowMorePress(item.eventName)}
-      >
-        <Text style={styles.showMoreButtonText}>Show More</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const handleRefresh = () => {
+    fetchBookmarkedEvents();
+  };
 
   return (
     <View style={styles.container}>
@@ -82,15 +125,34 @@ const EventBookmarks = ({ navigation, route }) => {
         <Text style={styles.titleText}>EventFinder</Text>
         <Text style={styles.header}>Bookmarked Events</Text>
       </View>
-
-      <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-        <Text style={styles.backButtonText}>{"< Back"}</Text>
+      <TouchableOpacity
+        style={styles.bButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Image
+          style={styles.bButtonImg}
+          source={require("../assets/left.png")}
+        />
       </TouchableOpacity>
-
       <FlatList
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
         data={bookmarkedEvents}
-        keyExtractor={(item) => item.id}
-        renderItem={renderEventItem}
+        keyExtractor={(item) => item.eventName}
+        renderItem={({ item }) => (
+          <View style={styles.innerContainer}>
+            <Text style={styles.eventName}>"{item.eventName}"</Text>
+            <Text style={styles.eventLocation}>{item.eventLocation}</Text>
+            <Text style={styles.eventDate}>{item.eventDate}</Text>
+            <TouchableOpacity
+              style={styles.showMoreButton}
+              onPress={() => handleShowMorePress(item.eventName)}
+            >
+              <Text style={styles.showMoreButtonText}>Show More</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       />
     </View>
   );
@@ -111,14 +173,15 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
     backgroundColor: "#3498db",
   },
-  backButton: {
-    marginBottom: 16,
-    padding: 20,
+
+  bButton: { padding: 10 },
+
+  bButtonImg: {
+    height: 30,
+    width: 30,
+    opacity: 1,
   },
-  backButtonText: {
-    fontSize: 16,
-    color: "#3498db",
-  },
+
   line: {
     height: 2,
     backgroundColor: "#3498db",
