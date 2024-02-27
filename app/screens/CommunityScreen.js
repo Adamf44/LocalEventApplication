@@ -328,17 +328,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "lightgrey",
-    marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    padding: 10,
     backgroundColor: "#3498db",
+    height: "16%",
+    marginTop: "0%",
   },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
+    padding: 10,
+  },
+
+  appHeadTitle: {
+    fontSize: 18,
+    color: "snow",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "13%",
+  },
+
   flatListContainer: {
     flex: 1,
     padding: 5,
@@ -354,20 +369,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#2c3e50",
   },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "snow",
-  },
+
   innerContainer: {
     padding: 20,
-  },
-  appHeadTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "snow",
-    marginTop: 10,
-    marginBottom: 5,
   },
 
   card: {

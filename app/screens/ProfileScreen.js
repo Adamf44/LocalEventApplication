@@ -199,17 +199,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "lightgrey",
-    marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    padding: 10,
     backgroundColor: "#3498db",
+    height: "13%",
+    marginTop: "0%",
   },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
+    padding: 10,
+  },
+
+  appHeadTitle: {
+    fontSize: 18,
+    color: "snow",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "13%",
+  },
+
   buttonCon1: {
     flexDirection: "row",
     justifyContent: "center",
@@ -220,11 +235,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     opacity: 0.4,
-  },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "snow",
   },
 
   line: {
@@ -279,13 +289,6 @@ const styles = StyleSheet.create({
     opacity: 1,
     height: 30,
     width: 30,
-  },
-  appHeadTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "snow",
-    marginTop: 10,
-    marginBottom: 5,
   },
   title: {
     fontSize: 24,
@@ -351,12 +354,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-    marginLeft: "5%",
-  },
   fullName: {
     fontSize: 18,
     fontWeight: "bold",

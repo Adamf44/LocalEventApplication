@@ -66,7 +66,7 @@ const HomeScreen = ({ navigation, route }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredEvents, setFilteredEvent] = useState([]); // Step 1: State for filtered events
+  const [filteredEvents, setFilteredEvent] = useState(event); // Initialize with event
 
   //use effect to get auth status
   useEffect(() => {
@@ -83,13 +83,13 @@ const HomeScreen = ({ navigation, route }) => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
-  // Function to filter events based on the search query
   const filterEvents = (query) => {
     const filteredEvents = event.filter((item) =>
       item.eventName.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredEvent(filteredEvents);
   };
+
   // Function to handle changes in the search input
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -137,6 +137,7 @@ const HomeScreen = ({ navigation, route }) => {
       });
 
       setEvent(events);
+      setFilteredEvent(events); // Update filteredEvents state
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -368,6 +369,7 @@ const styles = StyleSheet.create({
     color: "snow",
     alignSelf: "center",
     marginTop: "5%",
+    padding: 10,
   },
 
   searchContainer: {
@@ -469,7 +471,7 @@ const styles = StyleSheet.create({
   eventStartTime: {
     fontSize: 10,
     color: "white",
-    backgroundColor: "#3498db",
+    backgroundColor: "#2c3e50",
     padding: 5,
     width: "25%",
   },
@@ -477,7 +479,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 10,
     color: "white",
-    backgroundColor: "#e74c3c",
+    backgroundColor: "#2c3e50",
     padding: 5,
     width: "25%",
   },

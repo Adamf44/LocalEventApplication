@@ -93,19 +93,29 @@ const NotificationScreen = () => {
       </View>
 
       <FlatList
-        data={events}
+        data={events
+          .flatMap((event) =>
+            event.attendees.map((attendee) => ({
+              eventId: event.id,
+              eventName: event.eventName,
+              attendee,
+            }))
+          )
+          .reverse()} // Reverse the order of the flattened array
         renderItem={({ item }) => (
           <View style={styles.holder}>
             <View style={styles.eventContainer}>
               <Text style={styles.fromLabel}>From: </Text>
               <Text style={styles.eventName}>{item.eventName}</Text>
               <Text style={styles.attendees}>
-                {item.attendees.join(", & ")} is registered for this event!
+                {item.attendee} is registered for this event!
               </Text>
             </View>
           </View>
         )}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) =>
+          `${item.eventId}_${item.attendee}_${index}`
+        } // Unique key for each item
       />
     </View>
   );
@@ -115,21 +125,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "lightgrey",
-    marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    padding: 10,
     backgroundColor: "#3498db",
+    height: "13%",
+    marginTop: "0%",
   },
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
     color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
+    padding: 10,
+  },
+
+  appHeadTitle: {
+    fontSize: 18,
+    color: "snow",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "13%",
   },
 
   line: {
@@ -174,13 +193,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 5,
   },
-  appHeadTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "snow",
-    marginTop: 10,
-    marginBottom: 5,
-  },
+
   title: {
     fontSize: 24,
     color: "#3498db",
