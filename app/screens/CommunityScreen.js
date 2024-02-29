@@ -49,62 +49,72 @@ const CommunitiesTab = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const navigation = useNavigation();
   const [currentUser, setCurrentUser] = useState(null);
-  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [userCommunities, setUserCommunities] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
-  //use effect to control auth
+  //use effect to get auth status
   useEffect(() => {
+    //fetchUserCommunities();
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
+      if (user) {
+        console.log("User is authenticated on home screen.");
+      }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [setIsAuthenticated]);
 
+  ///
   useFocusEffect(
     React.useCallback(() => {
-      if (!isAuthenticated) {
-      }
-    }, [isAuthenticated])
-  );
-  console.log(
-    "User is authenticated on active communities tab: " + isAuthenticated
-  );
-  useEffect(() => {
-    const fetchUserCommunities = async () => {
-      try {
-        const userEmail = await AsyncStorage.getItem("userEmail");
-
-        if (!userEmail) {
-          console.log("User email not found in AsyncStorage");
+      const fetchUserCommunities = async () => {
+        try {
+          const value = await AsyncStorage.getItem("userEmail");
+          setUserEmail(value);
+          console.log("User email:", value); // Debugging statement
+          if (value !== null) {
+            getDocs(
+              query(
+                collection(db, "Communities"),
+                where("userEmail", "==", value) // Using value directly
+              )
+            ).then((docSnap) => {
+              console.log("Documents fetched:", docSnap.docs.length); // Debugging statement
+              let info = [];
+              docSnap.forEach((doc) => {
+                const { communityName, description } = doc.data(); // Removed userEmail since it's already filtered
+                info.push({
+                  ...doc.data(),
+                  id: doc.id,
+                  communityName,
+                  description,
+                });
+              });
+              console.log("User communities:", info); // Debugging statement
+              setUserCommunities(info);
+            });
+          } else {
+            console.log("User email not found in AsyncStorage");
+          }
+        } catch (error) {
+          console.error(
+            "Error fetching user about information: ",
+            error.message
+          );
         }
+      };
 
-        const querySnapshot = await getDocs(
-          query(
-            collection(db, "Communities"),
-            where("userEmail", "==", userEmail)
-          )
-        );
+      fetchUserCommunities();
+    }, [])
+  );
 
-        const communities = [];
-
-        querySnapshot.forEach((doc) => {
-          communities.push({
-            id: doc.id,
-            ...doc.data(),
-          });
-        });
-
-        setUserCommunities(communities);
-      } catch (error) {
-        console.error("Error: ", error.message);
-      }
-    };
-
-    fetchUserCommunities();
-  }, []);
+  handleActiveCommunitiesNav = (comName) => {
+    console.log("this is definedddddddddddddddd" + comName);
+    navigation.navigate("CommunityHome", { comName });
+  };
 
   // commented out activity circle if no user(if doing conditional auth)
   // if (!userEmail) {
@@ -138,13 +148,7 @@ const CommunitiesTab = () => {
           renderItem={({ item }) => (
             <View style={styles.innerContainer}>
               <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("CommunityHome", {
-                    community: item.communityName,
-                    userEmail: currentUser.email,
-                    isAuthenticated,
-                  });
-                }}
+                onPress={() => handleActiveCommunitiesNav(item.communityName)}
               >
                 <View style={styles.card}>
                   <Text style={styles.cardText}>{item.communityName}</Text>
@@ -170,12 +174,10 @@ const CreateTab = () => {
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigation = useNavigation();
 
-  //use effect to control auth
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -192,6 +194,11 @@ const CreateTab = () => {
   const handleCreateCommunity = async () => {
     try {
       const userEmail = await AsyncStorage.getItem("userEmail");
+      if (!userEmail) {
+        // Handle case where user email is not available
+        console.log("User email not found in AsyncStorage");
+        return;
+      }
 
       const docRef = await addDoc(collection(db, "Communities"), {
         communityName,

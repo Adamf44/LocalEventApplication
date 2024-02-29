@@ -10,11 +10,18 @@ import {
   Dimensions,
   Alert,
   ScrollView,
+  Platform,
   KeyboardAvoidingView,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  uploadBytesResumable,
+} from "firebase/storage";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "../database/config";
 import { useFocusEffect } from "@react-navigation/native";
@@ -42,17 +49,26 @@ const CreateCommunityEvent = ({ navigation }) => {
   const [eventTags, setEventTags] = useState([]);
   const [attendeeCount, setAttendeeCount] = useState(0);
   const [organizerName, setOrganizerName] = useState("");
-  const [communityN, setCommunityN] = useState("");
   const [organizerContact, setOrganizerContact] = useState("");
   const [organizerSocialMedia, setOrganizerSocialMedia] = useState("");
   const [eventComments, setEventComments] = useState([]);
+  const [eventCounty, setEventCounty] = useState("");
+  const [eventVillage, setEventVillage] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
-  const route = useRoute();
-  const { communityName } = route.params || {};
-
+  //use effect to get auth status
   useEffect(() => {
-    getData();
-  }, []);
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+      if (user) {
+        console.log("User is authenticated on home screen.");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [setIsAuthenticated]);
 
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -62,42 +78,65 @@ const CreateCommunityEvent = ({ navigation }) => {
       quality: 0,
     });
 
-    if (!result.canceled) {
-      const response = await fetch(result.uri);
-      const blob = await response.blob();
-      const storage = getStorage();
-      const storageRef = ref(storage, "event_images/" + eventName);
-      uploadBytes(storageRef, blob).then((snapshot) => {
-        console.log("Uploaded an image");
-      });
-      setEventImage(result.uri);
+    if (!result.cancelled) {
+      // Check if assets array exists and has at least one item
+      if (result.assets && result.assets.length > 0) {
+        // Access the first selected asset (assuming single selection)
+        const selectedAsset = result.assets[0];
+        // Assigning response to image user picked
+        const response = await fetch(selectedAsset.uri);
+        // Convert image to blob to be stored in firebase
+        const blob = await response.blob();
+        // Gets firebase storage info
+        const storage = getStorage();
+        // Upload image to firebase
+        const storageRef = ref(storage, "event_images/" + eventName);
+        uploadBytes(storageRef, blob).then((snapshot) => {
+          console.log("Uploaded a blob!");
+        });
+        // Set event image using the selected asset URI
+        setEventImage(selectedAsset.uri);
+      }
     }
   }
 
   const createEvent = async () => {
-    setCommunityN(communityName);
     try {
+      const userEmail = await AsyncStorage.getItem("userEmail");
+      setUserEmail(userEmail);
+
+      if (!isAuthenticated) {
+        Alert.alert(
+          "Authentication Required",
+          "Please log in to create an event.",
+          [{ text: "OK", onPress: () => navigation.navigate("LoginScreen") }]
+        );
+        return;
+      }
       if (
         !eventName ||
         !eventDescription ||
-        !eventDate ||
         !eventStartTime ||
         !eventEndTime ||
-        !eventLocation
+        !eventLocation ||
+        !eventCounty ||
+        !eventVillage
       ) {
         Alert.alert("Error", "All fields are required.");
         return;
       }
-
+      console.log("skncnckn");
       const response = await fetch(eventImage);
+
       const imageBlob = await response.blob();
+
       const storage = getStorage();
       const storageRef = ref(storage, "event_images/" + eventName);
 
-      await uploadBytes(storageRef, imageBlob);
+      await uploadBytesResumable(storageRef, imageBlob);
 
       const imageUrl = await getDownloadURL(storageRef);
-      setUsername(username);
+      console.log(" whistle wjhs" + imageUrl);
       const data = {
         eventName: eventName.trim(),
         eventDescription: eventDescription.trim(),
@@ -106,7 +145,6 @@ const CreateCommunityEvent = ({ navigation }) => {
         eventEndTime: eventEndTime.trim(),
         eventLocation: eventLocation.trim(),
         username: username.trim(),
-        communityN: communityN.trim(),
         imageUrl,
         eventStatus,
         registrationStatus,
@@ -117,10 +155,33 @@ const CreateCommunityEvent = ({ navigation }) => {
         organizerContact,
         organizerSocialMedia,
         eventComments,
-        communityName,
+        eventCounty,
+        eventVillage,
+        userEmail,
       };
 
       await setDoc(doc(db, "Events", eventName), data);
+
+      setEventName("");
+      setEventDescription("");
+      setEventDate("");
+      setEventStartTime("");
+      setEventEndTime("");
+      setEventLocation("");
+      setEventImage(null);
+      setUsername("");
+      setEventStatus("Upcoming");
+      setRegistrationStatus("Open");
+      setRegistrationDeadline("");
+      setEventTags([]);
+      setAttendeeCount(0);
+      setOrganizerName("");
+      setOrganizerContact("");
+      setOrganizerSocialMedia("");
+      setEventComments([]);
+      setEventCounty("");
+      setEventVillage("");
+      setUserEmail("");
 
       Alert.alert("Success", "Successfully created an event!", [
         {
@@ -135,74 +196,118 @@ const CreateCommunityEvent = ({ navigation }) => {
     }
   };
 
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem("Username");
-      var usernameFromAsyncStorage = value.toString();
-      if (value !== null) {
-        setUsername(usernameFromAsyncStorage);
-      }
-    } catch (e) {
-      // error reading value
-    }
-  };
-
   return (
-    <KeyboardAvoidingView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.title}>Create an Event!</Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "heigh"}
+    >
+      <View style={styles.appHead}>
+        <Text style={styles.titleText}>EventFinder</Text>
+        <Text style={styles.appHeadTitle}>Create a community Event!</Text>
+      </View>
 
+      <TouchableOpacity
+        style={styles.navButtons}
+        onPress={() => navigation.goBack()}
+      >
+        <Image
+          style={styles.navHomeImg}
+          source={require("../assets/left.png")}
+        />
+      </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        <Text style={styles.sectionTitle}>Event Information</Text>
         <TextInput
-          style={styles.nameInput}
           value={eventName}
           onChangeText={(text) => setEventName(text)}
-          placeholder="Name of Event"
+          placeholder="Name of Event/Activity"
+          style={styles.input}
         />
         <TextInput
-          style={styles.descInput}
+          style={styles.input}
           value={eventDescription}
           onChangeText={(text) => setEventDescription(text)}
-          placeholder="Short description"
+          placeholder="Short description of event"
+          keyboardType="email-address"
           multiline
           numberOfLines={3}
         />
 
-        <View style={styles.inputGroup}>
-          <TextInput
-            style={styles.input}
-            value={eventDate}
-            onChangeText={(text) => setEventDate(text)}
-            placeholder="Date (DD/MM/YY)"
-          />
-          <TextInput
-            style={styles.input}
-            value={eventLocation}
-            onChangeText={(text) => setEventLocation(text)}
-            placeholder="Location"
-          />
-        </View>
+        <Text style={styles.sectionTitle}>Location</Text>
+        <TextInput
+          style={styles.input}
+          value={eventCounty}
+          onChangeText={(text) => setEventCounty(text)}
+          placeholder="County"
+        />
+        <TextInput
+          style={styles.input}
+          value={eventVillage}
+          onChangeText={(text) => setEventVillage(text)}
+          placeholder="Town/Village"
+        />
+        <TextInput
+          style={styles.input}
+          value={eventLocation}
+          onChangeText={(text) => setEventLocation(text)}
+          placeholder="Address Line 3 (optional)"
+        />
 
-        <View style={styles.inputGroup}>
-          <TextInput
-            style={styles.input}
-            value={eventStartTime}
-            onChangeText={(text) => setEventStartTime(text)}
-            placeholder="Starting time"
-          />
-          <TextInput
-            style={styles.input}
-            value={eventEndTime}
-            onChangeText={(text) => setEventEndTime(text)}
-            placeholder="End time"
-          />
-        </View>
+        <Text style={styles.sectionTitle}>Event Time</Text>
+        <TextInput
+          style={styles.input}
+          value={eventStartTime}
+          onChangeText={(text) => setEventStartTime(text)}
+          placeholder="Event/Activity Starting time"
+        />
+        <TextInput
+          style={styles.input}
+          value={eventEndTime}
+          onChangeText={(text) => setEventEndTime(text)}
+          placeholder="Event/Activity End time"
+        />
+        <Text style={styles.sectionTitle}>Organizer Information</Text>
+        <TextInput
+          style={styles.input}
+          value={organizerName}
+          onChangeText={(text) => setOrganizerName(text)}
+          placeholder="Organizer Name"
+        />
+        <TextInput
+          style={styles.input}
+          value={organizerContact}
+          onChangeText={(text) => setOrganizerContact(text)}
+          placeholder="Organizer Contact"
+          keyboardType="phone-pad"
+        />
+        <TextInput
+          style={styles.input}
+          value={organizerSocialMedia}
+          onChangeText={(text) => setOrganizerSocialMedia(text)}
+          placeholder="Organizer Social Media"
+        />
+
+        <Text style={styles.sectionTitle}>Event Tags</Text>
+        <TextInput
+          style={styles.input}
+          value={eventTags.join(", ")}
+          onChangeText={(text) => setEventTags(text.split(", "))}
+          placeholder="Event Tags (comma-separated)"
+        />
 
         <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
           <Text style={styles.imagePickerButtonText}>Pick Image</Text>
         </TouchableOpacity>
-
         {eventImage && (
-          <Image source={{ uri: eventImage }} style={styles.eventImage} />
+          <Image
+            source={{ uri: eventImage }}
+            style={{
+              width: 200,
+              height: 200,
+              marginBottom: 10,
+              alignSelf: "center",
+            }}
+          />
         )}
 
         <TouchableOpacity
@@ -219,37 +324,77 @@ const CreateCommunityEvent = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "lightgrey",
   },
+  appHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+    backgroundColor: "#3498db",
+    height: "13%",
+    marginTop: "0%",
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
+    padding: 10,
+  },
+
   contentContainer: {
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: "left",
+    paddingBottom: 100,
+  },
+
+  line: {
+    height: 2,
+    backgroundColor: "#3498db",
+    marginVertical: 5,
+  },
+  lines: {
+    height: 20,
+    width: 10,
+  },
+  navHomeImg: { height: 30, width: 30, opacity: 1 },
+  navButtons: { padding: 10 },
+
+  logInButton: {
+    backgroundColor: "#e74c3c",
+    borderRadius: 8,
+    padding: 15,
+    width: 80,
     alignItems: "center",
-    paddingBottom: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  nameInput: {
-    width: "80%",
-    height: 50,
-    borderWidth: 3,
-    borderColor: "grey",
-    paddingHorizontal: 15,
-    textAlign: "center",
-    borderRadius: 10,
-    color: "#2c3e50",
-    fontSize: 16,
-    marginBottom: 20,
+  logInButtonText: {
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "bold",
   },
-  descInput: {
-    width: "80%",
-    textAlign: "center",
-    height: 50,
-    borderWidth: 3,
-    borderColor: "grey",
-    paddingHorizontal: 15,
-    borderRadius: 10,
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  sectionTitle: {
+    alignSelf: "center",
+    fontSize: 20,
+    fontWeight: "bold",
     color: "#2c3e50",
-    fontSize: 16,
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  appHeadTitle: {
+    fontSize: 18,
+    color: "snow",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "13%",
   },
   title: {
     fontSize: 24,
@@ -257,24 +402,18 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontWeight: "bold",
   },
-  inputGroup: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
   input: {
-    width: "48%",
-    height: 50,
+    alignSelf: "center",
+    width: "90%",
+    height: 35,
     borderWidth: 1,
-    borderColor: "#bdc3c7",
+    borderColor: "black",
+    marginBottom: 20,
     paddingHorizontal: 15,
-    borderWidth: 3,
-    borderColor: "grey",
-    margin: 1,
-    borderRadius: 10,
+    borderRadius: 5,
     color: "#2c3e50",
     fontSize: 16,
-    marginBottom: 10,
+    backgroundColor: "snow",
   },
   imagePickerButton: {
     backgroundColor: "#3498db",
@@ -283,6 +422,7 @@ const styles = StyleSheet.create({
     height: 40,
     marginBottom: 20,
     justifyContent: "center",
+    alignSelf: "center",
   },
   imagePickerButtonText: {
     color: "#fff",
@@ -301,7 +441,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: "80%",
     height: 40,
+    marginBottom: 20,
     justifyContent: "center",
+    alignSelf: "center",
   },
   createEventButtonText: {
     color: "#fff",

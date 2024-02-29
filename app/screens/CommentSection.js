@@ -154,12 +154,13 @@ const CommentSection = ({ navigation, route }) => {
         const userData = userSnapshot.docs[0].data();
         const username = userData.username;
 
-        // Add the comment with the retrieved username
+        // Add the comment with the retrieved username and timestamp
         const eventRef = doc(db, "Events", eventName);
         await updateDoc(eventRef, {
           eventComments: arrayUnion({
             username: username,
             content: newComment.trim(),
+            timestamp: new Date().toISOString(), // Add current timestamp
           }),
         });
 
@@ -187,44 +188,39 @@ const CommentSection = ({ navigation, route }) => {
     <View style={styles.container}>
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
-        <View style={styles.searchContainer}>
-          {!isAuthenticated && (
-            <TouchableOpacity
-              onPress={handleLoginPress}
-              style={styles.logInButton}
-            >
-              <Text style={styles.logInButtonText}>Log in</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <Text style={styles.appHeadTitle}>Comment section</Text>
       </View>
+      <TouchableOpacity
+        style={styles.bButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Image
+          style={styles.bButtonImg}
+          source={require("../assets/left.png")}
+        />
+      </TouchableOpacity>
 
       <View style={styles.eventContainer}>
-        <TouchableOpacity
-          style={styles.bButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Image
-            style={styles.bButtonImg}
-            source={require("../assets/left.png")}
-          />
-        </TouchableOpacity>
-        <Text style={styles.eventName}>
-          {event.length > 0 && event[0].eventName}
-        </Text>
-        {event.length > 0 && event[0].imageUrl && (
-          <Image source={{ uri: event[0].imageUrl }} style={styles.image} />
-        )}
         <View style={styles.eventInfo}>
-          <Text style={styles.eventVillage}>
-            {event.length > 0 && event[0].eventVillage}
+          <Text style={styles.eventName}>
+            {event.length > 0 && event[0].eventName}
           </Text>
-          <Text style={styles.eventDate}>
-            Date: {event.length > 0 && event[0].eventDate}
-          </Text>
-          <Text style={styles.organizerSocialMedia}>
-            Poster: {event.length > 0 && event[0].organizerSocialMedia}
-          </Text>
+          <View style={styles.eventInfo}>
+            <Text style={styles.eventVillage}>
+              {event.length > 0 && event[0].eventVillage}
+            </Text>
+            <Text style={styles.eventDate}>
+              Date: {event.length > 0 && event[0].eventDate}
+            </Text>
+            <Text style={styles.organizerSocialMedia}>
+              Poster: {event.length > 0 && event[0].organizerSocialMedia}
+            </Text>
+          </View>
+          <View style={styles.eventImg}>
+            {event.length > 0 && event[0].imageUrl && (
+              <Image source={{ uri: event[0].imageUrl }} style={styles.image} />
+            )}
+          </View>
         </View>
       </View>
       <View style={styles.commentFlatListContainer}>
@@ -238,19 +234,18 @@ const CommentSection = ({ navigation, route }) => {
           data={comments}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => (
-            //start of inner flatlist content
+            // Start of inner flatlist content
             <View key={index} style={styles.innerCommentContainer}>
-              <Text style={styles.commentUsername}>{item.username}:</Text>
-
+              <Text style={styles.commentUsername}>{item.username}: </Text>
               <Text style={styles.content}>{item.content}</Text>
-              <Image
-                style={styles.lineImg}
-                source={require("../assets/horizontal-rule.png")}
-              />
-            </View> //end inner 'comment' container
+              <Text style={styles.timestamp}>
+                {new Date(item.timestamp).toLocaleString()}
+              </Text>
+            </View> // End inner 'comment' container
           )}
         />
       </View>
+
       <TextInput
         style={styles.eventCommentInput}
         placeholder="Leave a comment.."
@@ -267,25 +262,68 @@ const CommentSection = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "snow",
-    marginTop: StatusBar.currentHeight || 40,
+    backgroundColor: "lightgrey",
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    padding: 10,
     backgroundColor: "#3498db",
+    height: "13%",
+    marginTop: "0%",
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
+    padding: 10,
+  },
+  appHeadTitle: {
+    fontSize: 18,
+    color: "snow",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "13%",
+  },
+  image: {
+    alignSelf: "flex-end",
+    height: "50%",
+    width: "20%",
+    borderRadius: 8,
+  },
+  eventHead: {
+    backgroundColor: "snow",
   },
   eventContainer: {
-    flexDirection: "column",
-    backgroundColor: "snow",
-    width: screenWidth + 20,
-    padding: 20,
+    flex: 1,
   },
-
+  eventInfo: {
+    backgroundColor: "blue",
+    padding: 5,
+  },
+  eventName: {
+    fontSize: 30,
+    color: "black",
+    fontStyle: "italic",
+    alignSelf: "center",
+  },
+  eventLocation: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#3498db",
+  },
+  eventDescription: {
+    fontSize: 10,
+    color: "#7f8c8d",
+  },
+  eventDate: {
+    fontSize: 10,
+    fontStyle: "italic",
+    fontWeight: "bold",
+    color: "#3498db",
+  },
   bButton: { padding: 10 },
 
   bButtonImg: {
@@ -293,19 +331,22 @@ const styles = StyleSheet.create({
     width: 30,
     opacity: 1,
   },
-  lineImg: {},
   commentFlatListContainer: {
-    flex: 1,
+    flexDirection: "column",
     backgroundColor: "lightgrey",
+    padding: 5,
   },
 
   innerCommentContainer: {
-    margin: 20,
+    padding: 5,
     borderWidth: 1,
     borderColor: "snow",
-    backgroundColor: "#3498db",
-    alignSelf: "center",
-    width: screenWidth * 0.9,
+    backgroundColor: "darkgrey",
+  },
+  timestamp: {
+    color: "snow",
+    alignSelf: "flex-end",
+    fontSize: 12,
   },
 
   commentButton: {
@@ -317,10 +358,9 @@ const styles = StyleSheet.create({
     marginBottom: 100,
   },
   content: {
-    fontSize: 12,
+    fontSize: 15,
     paddingLeft: 5,
-    fontWeight: "bold",
-    color: "#fff",
+    color: "#2c3e50",
   },
   commentButtonContainer: {
     backgroundColor: "lightgrey",
@@ -366,59 +406,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontStyle: "italic",
   },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
 
-  logInButton: {
-    backgroundColor: "#e74c3c",
-    borderRadius: 8,
-    padding: 15,
-    width: 80,
-    alignItems: "center",
-  },
-  logInButtonText: {
-    fontSize: 14,
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  image: {
-    width: "50%",
-    alignSelf: "flex-end",
-    height: 80,
-    borderRadius: 8,
-    marginRight: "5%",
-  },
-  eventInfo: {
-    marginTop: -55,
-  },
-  eventName: {
-    fontSize: 20,
-    color: "black",
-    fontStyle: "italic",
-  },
-  eventDescription: {
-    fontSize: 10,
-    color: "#7f8c8d",
-  },
-  eventDate: {
-    fontSize: 10,
-    fontStyle: "italic",
-    fontWeight: "bold",
-    color: "#3498db",
-  },
   text: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#333333",
   },
-  eventLocation: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#3498db",
-  },
+
   commentTitle: {
     fontSize: 16,
     fontWeight: "bold",
@@ -435,6 +429,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   commentUsername: {
+    fontWeight: "bold",
     padding: 5,
     fontSize: 10,
     color: "snow",
