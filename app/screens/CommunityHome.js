@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
   Image,
   StatusBar,
+  Alert,
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useEffect, useState } from "react";
@@ -28,6 +29,8 @@ import {
   getDocs,
   query,
   where,
+  updateDoc,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "../database/config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -51,6 +54,7 @@ const CommunityHome = ({ navigation, route }) => {
   const [userEmail, setUserEmail] = useState("");
   const { comName } = route.params || {};
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
 
   //use effect to get auth status
   useEffect(() => {
@@ -74,10 +78,7 @@ const CommunityHome = ({ navigation, route }) => {
         setUserEmail(value);
         console.log("thisisir" + comName);
         getDocs(
-          query(
-            collection(db, "Events"),
-            where("communityMembers", "==", userEmail)
-          )
+          query(collection(db, "Events"), where("communityName", "==", comName))
         ).then((docSnap) => {
           let events = [];
           docSnap.forEach((doc) => {
@@ -140,6 +141,45 @@ const CommunityHome = ({ navigation, route }) => {
     console.log("handleShowMorePress called with eventName:", eventName);
     navigation.navigate("ShowMoreScreen", { eventName });
   };
+  const handleInviteUser = async () => {
+    try {
+      console.log("heyyyyyyyyyyyyyyyyyyy123456" + comName);
+      // Query to find the community document with the matching communityName
+      const communityQuery = query(
+        collection(db, "Communities"),
+        where("communityName", "==", comName)
+      );
+
+      // Get the matching document
+      const querySnapshot = await getDocs(communityQuery);
+      if (!querySnapshot.empty) {
+        const communityDoc = querySnapshot.docs[0];
+        const communityRef = doc(db, "Communities", communityDoc.id);
+
+        // Update the document to add the user's email to the userEmails array
+        await updateDoc(communityRef, {
+          userEmail: arrayUnion(inviteEmail),
+        });
+
+        setInviteEmail(""); // Clear the input after adding to Firestore
+        Alert.alert(
+          "User added to community",
+          "User has been added to the community successfully."
+        );
+      } else {
+        Alert.alert(
+          "Community not found",
+          "Could not find the specified community. Please try again later."
+        );
+      }
+    } catch (error) {
+      console.error("Error adding user to community: ", error);
+      Alert.alert(
+        "Error",
+        "Failed to add user to community. Please try again later."
+      );
+    }
+  };
 
   const handleAttend = async (userEmail, eventName) => {
     try {
@@ -179,7 +219,6 @@ const CommunityHome = ({ navigation, route }) => {
     <View style={styles.container}>
       <View style={styles.appHead}>
         <Text style={styles.titleText}>Community</Text>
-
         <TouchableOpacity
           style={styles.addEventButton}
           onPress={handleAddEvent}
@@ -188,15 +227,30 @@ const CommunityHome = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity
-        style={styles.navButtons}
-        onPress={() => navigation.goBack()}
-      >
-        <Image
-          style={styles.navHomeImg}
-          source={require("../assets/left.png")}
+      <View style={styles.inviteCon}>
+        <TouchableOpacity
+          style={styles.navButtons}
+          onPress={() => navigation.goBack()}
+        >
+          <Image
+            style={styles.navHomeImg}
+            source={require("../assets/left.png")}
+          />
+        </TouchableOpacity>
+        <TextInput
+          placeholder="Enter user email..."
+          style={styles.searchBar}
+          value={inviteEmail}
+          onChangeText={setInviteEmail}
         />
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.addUserButton}
+          onPress={handleInviteUser}
+        >
+          <Text style={styles.addUserButtonText}>Invite user</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.flatListContainer}>
         <FlatList
           refreshControl={
@@ -292,7 +346,6 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#3498db",
     height: "13%",
-    marginTop: "0%",
   },
   titleText: {
     fontSize: 24,
@@ -302,7 +355,15 @@ const styles = StyleSheet.create({
     marginTop: "5%",
     padding: 10,
   },
+
+  inviteCon: {
+    flexDirection: "row",
+    padding: 10,
+    justifyContent: "flex-end",
+    height: "8%",
+  },
   addEventButton: {
+    margin: 10,
     backgroundColor: "#e74c3c",
     justifyContent: "center",
     borderRadius: 8,
@@ -321,6 +382,24 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
+  addUserButton: {
+    marginLeft: 10,
+    backgroundColor: "#e74c3c",
+    justifyContent: "center",
+    borderRadius: 8,
+    width: "30%",
+    height: "70%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  addUserButtonText: {
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
   appHeadTitle: {
     fontSize: 18,
     color: "snow",
@@ -329,7 +408,7 @@ const styles = StyleSheet.create({
     marginTop: "13%",
   },
   navHomeImg: { height: 30, width: 30, opacity: 1 },
-  navButtons: { padding: 10 },
+  navButtons: { marginRight: 50 },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -345,11 +424,11 @@ const styles = StyleSheet.create({
 
   searchBar: {
     backgroundColor: "snow",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 5,
     borderRadius: 8,
-    height: "45%",
-    width: screenWidth * 0.5,
+    height: "70%",
+    width: screenWidth * 0.4,
     borderColor: "#bdc3c7",
     borderWidth: 1,
     fontSize: 15,
@@ -359,6 +438,7 @@ const styles = StyleSheet.create({
   /////////////////////////////////////////////////////////////// Event style ; //////////////////////////////////////////////////////////////////
   flatListContainer: {
     flex: 1,
+    marginBottom: 100,
   },
   innerContainer: {
     marginTop: "5%",

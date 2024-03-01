@@ -44,6 +44,7 @@ const RegisterScreen = ({ navigation }) => {
   const [userBio, setUserBio] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [county, setCounty] = useState("");
 
   const createUser = async () => {
     try {
@@ -116,6 +117,13 @@ const RegisterScreen = ({ navigation }) => {
           onChangeText={(text) => setFullName(text)}
           placeholder="Full Name"
           style={styles.input}
+        />
+        <TextInput
+          value={county}
+          onChangeText={(text) => setCounty(text)}
+          placeholder="County"
+          style={styles.input}
+          secureTextEntry
         />
         <TextInput
           value={userBio}

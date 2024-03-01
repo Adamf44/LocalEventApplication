@@ -11,6 +11,8 @@ import {
   StatusBar,
   Dimensions,
   RefreshControl,
+  ImageBackground,
+  Image,
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React, { useState, useEffect } from "react";
@@ -24,6 +26,7 @@ import {
   getDocs,
   query,
   where,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "../database/config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -52,6 +55,7 @@ const CommunitiesTab = () => {
   const [userCommunities, setUserCommunities] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [comAmount, setComAmount] = useState("");
 
   //use effect to get auth status
   useEffect(() => {
@@ -79,10 +83,11 @@ const CommunitiesTab = () => {
             getDocs(
               query(
                 collection(db, "Communities"),
-                where("userEmail", "==", value) // Using value directly
+                where("userEmail", "array-contains", value) // Check if userEmails array contains the user's email
               )
             ).then((docSnap) => {
               console.log("Documents fetched:", docSnap.docs.length); // Debugging statement
+              setComAmount(docSnap.docs.length);
               let info = [];
               docSnap.forEach((doc) => {
                 const { communityName, description } = doc.data(); // Removed userEmail since it's already filtered
@@ -141,6 +146,7 @@ const CommunitiesTab = () => {
           </TouchableOpacity>
         )}
       </View>
+      <Text style={styles.comAmount}>Active Communities: {comAmount} </Text>
       <View style={styles.flatListContainer}>
         <FlatList
           data={userCommunities}
@@ -152,13 +158,17 @@ const CommunitiesTab = () => {
               >
                 <View style={styles.card}>
                   <Text style={styles.cardText}>{item.communityName}</Text>
-                  <Text style={styles.cardDesc}>{item.description}</Text>
+                  <Text style={styles.cardDesc}>"{item.description}"</Text>
                 </View>
               </TouchableOpacity>
             </View>
           )}
         />
       </View>
+      <Image
+        source={require("../assets/comBack.png")}
+        style={styles.backgroundImage}
+      />
     </View>
   );
 };
@@ -177,19 +187,19 @@ const CreateTab = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigation = useNavigation();
-
+  //use effect to get auth status
   useEffect(() => {
+    //fetchUserCommunities();
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
+      if (user) {
+        console.log("User is authenticated on home screen.");
+      }
     });
 
     return () => unsubscribe();
-  }, []);
-
-  console.log(
-    "User is authenticated on community create tab: " + isAuthenticated
-  );
+  }, [setIsAuthenticated]);
 
   const handleCreateCommunity = async () => {
     try {
@@ -204,7 +214,7 @@ const CreateTab = () => {
         communityName,
         description,
         visibility,
-        userEmail: userEmail,
+        userEmail: arrayUnion(userEmail), // Add the user's email to the userEmails array
       });
 
       console.log("Community created with ID: ", docRef.id);
@@ -216,13 +226,14 @@ const CreateTab = () => {
       console.error("Error creating community: ", error.message);
     }
   };
+
   /////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////        Create screen UI     ////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
         <Text style={styles.appHeadTitle}>Create a community</Text>
@@ -236,38 +247,34 @@ const CreateTab = () => {
         )}
       </View>
 
+      <Text style={styles.heading}>Create a Community & invite friends!</Text>
       <View style={styles.createContainer}>
-        <Text style={styles.heading}>
-          Create a New Community & invite friends!
-        </Text>
-
         <TextInput
-          style={styles.input}
+          style={styles.nameInput}
           placeholder="Community Name"
           value={communityName}
           onChangeText={(text) => setCommunityName(text)}
         />
         <TextInput
-          style={styles.input}
+          style={styles.descInput}
           placeholder="Description"
           value={description}
           onChangeText={(text) => setDescription(text)}
           multiline
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Visibility (Private, Public, etc.)"
-          value={visibility}
-          onChangeText={(text) => setVisibility(text)}
-        />
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={handleCreateCommunity}
-        >
-          <Text style={styles.createButtonText}>Create</Text>
-        </TouchableOpacity>
       </View>
-    </ScrollView>
+
+      <TouchableOpacity
+        style={styles.createButton}
+        onPress={handleCreateCommunity}
+      >
+        <Text style={styles.createButtonText}>Create</Text>
+      </TouchableOpacity>
+      <Image
+        source={require("../assets/comBack.png")}
+        style={styles.backgroundImage}
+      />
+    </View>
   );
 };
 
@@ -341,7 +348,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 10,
     backgroundColor: "#3498db",
-    height: "16%",
+    height: "13%",
     marginTop: "0%",
   },
   titleText: {
@@ -349,7 +356,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "snow",
     alignSelf: "center",
-    marginTop: "5%",
+    marginTop: "7%",
     padding: 10,
   },
 
@@ -358,27 +365,41 @@ const styles = StyleSheet.create({
     color: "snow",
     flexDirection: "row",
     alignItems: "center",
-    marginTop: "13%",
+    marginTop: "14%",
   },
 
   flatListContainer: {
     flex: 1,
-    padding: 5,
+    padding: 15,
+    position: "relative", // Position the FlatList relative to its parent
+    top: 20, // Adjust top position as needed
+    zIndex: 1, // Set zIndex to ensure the FlatList is above the image
   },
   createContainer: {
     flex: 1,
-    padding: 10,
+    padding: 5,
     alignItems: "center",
   },
   heading: {
     marginBottom: 15,
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: "bold",
     color: "#2c3e50",
+    alignSelf: "center",
+    marginTop: "5%",
+  },
+  comAmount: {
+    fontSize: 25,
+    color: "#2c3e50",
+    fontWeight: "bold",
+    padding: 10,
+    flexDirection: "row",
+    marginTop: "5%",
+    alignSelf: "center",
   },
 
   innerContainer: {
-    padding: 20,
+    padding: 10,
   },
 
   card: {
@@ -390,17 +411,32 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 20,
+    letterSpacing: 2,
     fontWeight: "bold",
     color: "white",
+    marginBottom: "2%",
   },
   cardDesc: {
-    fontSize: 10,
+    fontSize: 15,
     color: "white",
+    fontStyle: "italic",
   },
-  input: {
+  descInput: {
     height: 40,
     borderWidth: 1,
-    borderColor: "#bdc3c7",
+    borderColor: "black",
+    marginBottom: 20,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    backgroundColor: "snow",
+    fontSize: 16,
+    width: "80%",
+    height: "25%",
+  },
+  nameInput: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: "black",
     marginBottom: 20,
     paddingHorizontal: 15,
     borderRadius: 10,
@@ -414,13 +450,23 @@ const styles = StyleSheet.create({
     padding: 15,
     alignSelf: "center",
     width: 150,
-    marginTop: 10,
+    marginTop: 30,
+    elevation: 2, // Set elevation to ensure the button is above the image
+    zIndex: 1, // Set zIndex to ensure the button is above the image
   },
   createButtonText: {
     fontSize: 16,
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
+  },
+  backgroundImage: {
+    marginTop: "-50%",
+    justifyContent: "center",
+    alignSelf: "center",
+    opacity: 0.4,
+    height: 370,
+    width: 370,
   },
 });
 export default CommunityScreen;

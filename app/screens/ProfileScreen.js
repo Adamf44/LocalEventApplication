@@ -95,7 +95,7 @@ const ProfileScreen = ({ navigation, route }) => {
       await signOut(auth);
       isAuthenticated: false;
       await AsyncStorage.removeItem("userEmail");
-      navigation.navigate("HomeScreen", {});
+      navigation.navigate("LoginScreen", {});
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -123,16 +123,10 @@ const ProfileScreen = ({ navigation, route }) => {
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
         <Text style={styles.appHeadTitle}>Profile page</Text>
-        <View style={styles.searchContainer}>
-          {isAuthenticated ? null : (
-            <TouchableOpacity
-              onPress={handleLoginPress}
-              style={styles.logInButton}
-            >
-              <Text style={styles.logInButtonText}>Log in</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+
+        <TouchableOpacity onPress={handleLogout} style={styles.logInButton}>
+          <Text style={styles.logInButtonText}>Log out</Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.usernameText}>Welcome, {username}!</Text>
@@ -144,29 +138,44 @@ const ProfileScreen = ({ navigation, route }) => {
               source={require("../assets/profile.png")}
             />
 
-            <Text style={styles.fullName}>Name: {item.fullName}</Text>
-
-            <Text style={styles.userBio}>{item.userBio}</Text>
+            <Text style={styles.userEmail}>
+              <Text style={styles.userBio}>"{item.userBio}"</Text>
+            </Text>
             <Image
               style={styles.lineSep}
               source={require("../assets/horizontal-rule.png")}
             />
-            <Text style={styles.userEmail}>Email: {item.email}</Text>
+
+            <Text style={styles.userEmail}>
+              Name:<Text style={styles.userValue}> {item.fullName}</Text>
+            </Text>
             <Image
               style={styles.lineSep}
               source={require("../assets/horizontal-rule.png")}
             />
             <Text style={styles.userEmail}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas
-              in arcu id nunc sagittis varius ut et magna. Orci varius natoque
-              penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-              Ut hendrerit porttitor lorem non condimentum. Nullam non lectus at
-              turpis vestibulum mollis. Donec condimentum velit at malesuada
-              tincidunt. Nam blandit lorem sit amet egestas aliquam. Aliquam
-              varius pharetra mi, in imperdiet neque aliquet vel. Etiam a orci
-              quis quam ultricies iaculis. Praesent tempus augue vel risus
-              hendrerit gravida.{" "}
+              Email:<Text style={styles.userValue}> {item.email}</Text>
             </Text>
+            <Image
+              style={styles.lineSep}
+              source={require("../assets/horizontal-rule.png")}
+            />
+
+            <Text style={styles.userEmail}>
+              Location:<Text style={styles.userValue}> {item.county}</Text>
+            </Text>
+            <Image
+              style={styles.lineSep}
+              source={require("../assets/horizontal-rule.png")}
+            />
+            <Text style={styles.userEmail}>
+              Username:<Text style={styles.userValue}> {item.username}</Text>
+            </Text>
+
+            <Image
+              style={styles.lineSep}
+              source={require("../assets/horizontal-rule.png")}
+            />
 
             <View style={styles.buttonCon1}>
               <TouchableOpacity
@@ -232,8 +241,9 @@ const styles = StyleSheet.create({
     marginTop: "10%",
   },
   proImg: {
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 150,
+    marginBottom: "5%",
     opacity: 0.4,
   },
 
@@ -254,10 +264,14 @@ const styles = StyleSheet.create({
   },
   logInButton: {
     backgroundColor: "#e74c3c",
+    justifyContent: "center",
+    alignSelf: "center",
+    alignItems: "center",
     borderRadius: 8,
     padding: 15,
     width: 80,
-    alignItems: "center",
+    height: 50,
+    marginBottom: "-8%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -411,23 +425,28 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     padding: 10,
     fontSize: 25,
-    textDecorationLine: "underline",
-    opacity: 0.5,
-    marginBottom: 5,
+    fontWeight: "bold",
+    opacity: 1,
+    marginBottom: "5%",
     color: "#2c3e50",
   },
   innerContainer: {
     backgroundColor: "snow",
+    alignItems: "center",
     alignSelf: "center",
     padding: 16,
     marginBottom: 20,
     width: screenWidth * 0.9,
-    height: screenHeight,
+    height: "65%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 3,
+    backgroundColor: "snow",
+    borderColor: "darkgrey",
+    borderRadius: 30,
   },
   fullName: {
     fontSize: 22,
@@ -438,13 +457,20 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   userBio: {
-    fontSize: 14,
-    color: "#7f8c8d",
+    fontSize: 20,
+    color: "#3498db",
     margin: 10,
+    fontStyle: "italic",
   },
   userEmail: {
-    fontSize: 14,
-    color: "#7f8c8d",
+    fontSize: 15,
+    color: "black",
+    margin: 10,
+  },
+  userValue: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#3498db",
     margin: 10,
   },
 });

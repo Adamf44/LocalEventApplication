@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
   StatusBar,
+  Image,
   Alert,
 } from "react-native";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -103,18 +104,23 @@ function LoginScreen({ navigation }) {
           placeholderTextColor={"#4f5250"}
           secureTextEntry={true}
         />
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={signInUser}>
-          <Text style={styles.buttonText}>Log in</Text>
-        </TouchableOpacity>
-        <Text>Don't have an account? Register below!</Text>
-        <TouchableOpacity
-          onPress={handleRegister}
-          style={styles.registerButton}
-        >
-          <Text style={styles.registerButtonText}>Register</Text>
-        </TouchableOpacity>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={signInUser}>
+            <Text style={styles.buttonText}>Log in</Text>
+          </TouchableOpacity>
+          <Text>Don't have an account? Register below!</Text>
+          <TouchableOpacity
+            onPress={handleRegister}
+            style={styles.registerButton}
+          >
+            <Text style={styles.registerButtonText}>Register</Text>
+          </TouchableOpacity>
+        </View>
+        <Image
+          source={require("../assets/form.png")}
+          style={styles.backgroundImage}
+        />
       </View>
     </View>
   ); //end return
@@ -154,15 +160,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: "13%",
   },
+  backgroundImage: {
+    alignSelf: "center",
+    opacity: 1,
+    height: 600,
+    width: 450,
+    marginTop: "-70%",
+  },
   loginContainer: {
     flex: 1,
     padding: 20,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: "20%",
   },
   buttonContainer: {
-    alignItems: "center",
     flex: 1,
+    alignItems: "center",
+    marginTop: "5%",
+    elevation: 2, // Set elevation to ensure the button is above the image
+    zIndex: 1, // Set zIndex to ensure the button is above the image
   },
   title: {
     padding: 10,
@@ -175,10 +192,12 @@ const styles = StyleSheet.create({
     height: 50,
     borderWidth: 1,
     borderColor: "#2c3e50",
-    marginBottom: 20,
+    marginBottom: 10,
     paddingHorizontal: 15,
     borderRadius: 10,
     fontSize: 20,
+    elevation: 2, // Set elevation to ensure the button is above the image
+    zIndex: 1, // Set zIndex to ensure the button is above the image
   },
   button: {
     backgroundColor: "#e74c3c",
@@ -188,6 +207,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     justifyContent: "center",
     marginTop: 10,
+    elevation: 2, // Set elevation to ensure the button is above the image
+    zIndex: 1, // Set zIndex to ensure the button is above the image
   },
   registerButton: {
     backgroundColor: "#3498db",
@@ -197,6 +218,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     justifyContent: "center",
     marginTop: 10,
+    elevation: 2, // Set elevation to ensure the button is above the image
+    zIndex: 1, // Set zIndex to ensure the button is above the image
   },
   registerButtonText: {
     color: "#fff",

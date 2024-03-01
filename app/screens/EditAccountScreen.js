@@ -38,6 +38,7 @@ function EditAccountScreen({ route, navigation }) {
   const [email, setEmail] = useState("");
   const [userBio, setUserBio] = useState("");
   const [fullName, setFullName] = useState("");
+  const [county, setCounty] = useState("");
   const [password, setPassword] = useState("");
   const { userEmail } = route.params || false;
 
@@ -81,6 +82,7 @@ function EditAccountScreen({ route, navigation }) {
             username,
             userBio,
             fullName,
+            county,
           })
             .then(() => {
               // Successfully updated the profile
@@ -120,50 +122,127 @@ function EditAccountScreen({ route, navigation }) {
       query(collection(db, "Users"), where("email", "==", userEmail))
     ).then((docSnap) => {
       docSnap.forEach((doc) => {
-        const { email, fullName, username, userBio } = doc.data();
+        const { email, fullName, username, userBio, county } = doc.data();
 
         console.log("Retrieved user info:", {
           email,
           fullName,
           username,
           userBio,
+          county,
         });
 
         setUsername(username);
         setEmail(email);
         setFullName(fullName);
         setUserBio(userBio);
+        setCounty(county);
       });
     });
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content"></StatusBar>
+    <View style={styles.container}>
+      <View style={styles.appHead}>
+        <Text style={styles.titleText}>EventFinder</Text>
+        <Text style={styles.appHeadTitle}>Edit Account</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.navButtons}
+        onPress={() => navigation.goBack()}
+      >
+        <Image
+          style={styles.navHomeImg}
+          source={require("../assets/left.png")}
+        />
+      </TouchableOpacity>
 
-      <Text style={styles.titleNav}>Edit profile</Text>
+      <View style={styles.mainCon}>
+        <Text style={styles.labels}>Full Name</Text>
 
-      <Text style={styles.labels}>First Name</Text>
+        <TextInput
+          value={fullName}
+          onChangeText={(text) => setFullName(text)}
+          placeholder="Full name"
+          style={styles.inputBox}
+        ></TextInput>
 
-      <TextInput
-        value={fullName}
-        onChangeText={(text) => setFullName(text)}
-        placeholder="Full name"
-        style={styles.inputBox}
-      ></TextInput>
+        <Text style={styles.labels}>Userame</Text>
 
-      <View style={styles.buttonContainer}>
+        <TextInput
+          value={username}
+          onChangeText={(text) => setUsername(text)}
+          placeholder="Username"
+          style={styles.inputBox}
+        ></TextInput>
+
+        <Text style={styles.labels}>County</Text>
+
+        <TextInput
+          value={county}
+          onChangeText={(text) => setCounty(text)}
+          placeholder="County"
+          style={styles.inputBox}
+        ></TextInput>
+
+        <Text style={styles.labels}>Bio</Text>
+
+        <TextInput
+          value={userBio}
+          onChangeText={(text) => setUserBio(text)}
+          placeholder="Bio"
+          style={styles.inputBox}
+        ></TextInput>
+
+        <Text style={styles.labels}>Email</Text>
+
+        <TextInput
+          value={userEmail}
+          onChangeText={(text) => setEmail(text)}
+          placeholder="Email address.."
+          style={styles.inputBox}
+        ></TextInput>
         <TouchableOpacity style={styles.button} onPress={editProfile}>
           <Text style={styles.buttonText} onPress={console.log("pressed")}>
             Update
           </Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "lightgrey",
+  },
+  appHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+    backgroundColor: "#3498db",
+    height: "13%",
+    marginTop: "0%",
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
+    padding: 10,
+  },
+  navHomeImg: { height: 30, width: 30, opacity: 1 },
+  navButtons: { padding: 10 },
+
+  appHeadTitle: {
+    fontSize: 18,
+    color: "snow",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "13%",
+  },
   nav: {
     backgroundColor: "white",
     width: "100%",
@@ -179,6 +258,7 @@ const styles = StyleSheet.create({
     padding: 10,
     flex: 0.17,
   },
+  mainCon: { flex: 1 },
   backText: {
     color: "navy",
     textAlign: "center",
@@ -210,41 +290,42 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   labels: {
-    fontSize: 25,
-    fontWeight: "600",
-    marginLeft: 20,
-    marginTop: 20,
-    color: "navy",
-    marginBottom: 10,
+    fontSize: 20,
+    color: "#2c3e50",
+    fontStyle: "italic",
+    padding: 15,
+    flexDirection: "row",
   },
   inputBox: {
-    borderWidth: 1.5,
-    borderColor: "navy",
+    borderWidth: 1,
+    borderColor: "black",
     padding: 20,
     width: "80%",
     marginBottom: 10,
     marginLeft: "10%",
     marginRight: "10%",
     borderRadius: 10,
-    fontSize: 17.5,
+    fontSize: 18,
+    height: "5%",
+    backgroundColor: "snow",
   },
 
   buttonContainer: {
     paddingVertical: 40,
   },
   button: {
-    padding: 20,
-    backgroundColor: "navy",
-
+    backgroundColor: "#3498db",
+    borderRadius: 8,
+    padding: 15,
     alignSelf: "center",
-    marginBottom: 10,
-    borderRadius: 50,
+    width: 150,
+    margin: 5,
   },
   buttonText: {
-    fontSize: 25,
-    color: "white",
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
     textAlign: "center",
-    fontWeight: "700",
   },
   titleMini: {
     fontSize: 35,

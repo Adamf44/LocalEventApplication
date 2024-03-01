@@ -16,6 +16,7 @@ import {
   Touchable,
   StatusBar,
   RefreshControl,
+  Platform,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -185,83 +186,95 @@ const CommentSection = ({ navigation, route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.appHead}>
-        <Text style={styles.titleText}>EventFinder</Text>
-        <Text style={styles.appHeadTitle}>Comment section</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.bButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Image
-          style={styles.bButtonImg}
-          source={require("../assets/left.png")}
-        />
-      </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : -2000} // Adjust as needed
+    >
+      <View style={styles.container}>
+        <View style={styles.appHead}>
+          <Text style={styles.titleText}>EventFinder</Text>
+          <Text style={styles.appHeadTitle}>Comment section</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.bButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Image
+            style={styles.bButtonImg}
+            source={require("../assets/left.png")}
+          />
+        </TouchableOpacity>
 
-      <View style={styles.eventContainer}>
-        <View style={styles.eventInfo}>
-          <Text style={styles.eventName}>
-            {event.length > 0 && event[0].eventName}
-          </Text>
+        <View style={styles.eventContainer}>
           <View style={styles.eventInfo}>
-            <Text style={styles.eventVillage}>
-              {event.length > 0 && event[0].eventVillage}
+            <Text style={styles.eventName}>
+              {event.length > 0 && event[0].eventName}
             </Text>
-            <Text style={styles.eventDate}>
-              Date: {event.length > 0 && event[0].eventDate}
-            </Text>
-            <Text style={styles.organizerSocialMedia}>
-              Poster: {event.length > 0 && event[0].organizerSocialMedia}
-            </Text>
-          </View>
-          <View style={styles.eventImg}>
-            {event.length > 0 && event[0].imageUrl && (
-              <Image source={{ uri: event[0].imageUrl }} style={styles.image} />
-            )}
+            <View style={styles.eventInfo}>
+              <Text style={styles.eventVillage}>
+                {event.length > 0 && event[0].eventVillage}
+              </Text>
+              <Text style={styles.eventDate}>
+                Date: {event.length > 0 && event[0].eventDate}
+              </Text>
+              <Text style={styles.organizerSocialMedia}>
+                Poster: {event.length > 0 && event[0].organizerSocialMedia}
+              </Text>
+              {event.length > 0 && event[0].imageUrl && (
+                <Image
+                  source={{ uri: event[0].imageUrl }}
+                  style={styles.image}
+                />
+              )}
+            </View>
           </View>
         </View>
-      </View>
-      <View style={styles.commentFlatListContainer}>
-        <FlatList
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-          data={comments}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => (
-            // Start of inner flatlist content
-            <View key={index} style={styles.innerCommentContainer}>
-              <Text style={styles.commentUsername}>{item.username}: </Text>
-              <Text style={styles.content}>{item.content}</Text>
-              <Text style={styles.timestamp}>
-                {new Date(item.timestamp).toLocaleString()}
-              </Text>
-            </View> // End inner 'comment' container
-          )}
-        />
-      </View>
+        <View style={styles.commentFlatListContainer}>
+          <FlatList
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+            data={comments}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, index }) => (
+              // Start of inner flatlist content
+              <View key={index} style={styles.innerCommentContainer}>
+                <Text style={styles.commentUsername}>{item.username}: </Text>
+                <Text style={styles.content}>{item.content}</Text>
+                <Text style={styles.timestamp}>
+                  {new Date(item.timestamp).toLocaleString()}
+                </Text>
+              </View> // End inner 'comment' container
+            )}
+          />
+        </View>
+        <View style={styles.butCon}>
+          <TextInput
+            style={styles.eventCommentInput}
+            placeholder="Leave a comment.."
+            value={newComment}
+            onChangeText={(text) => setNewComment(text)}
+          />
 
-      <TextInput
-        style={styles.eventCommentInput}
-        placeholder="Leave a comment.."
-        value={newComment}
-        onChangeText={(text) => setNewComment(text)}
-      />
-      <TouchableOpacity style={styles.commentButton} onPress={handleAddComment}>
-        <Text style={styles.commentButtonText}>Add Comment</Text>
-      </TouchableOpacity>
-    </View>
+          <TouchableOpacity
+            style={styles.commentButton}
+            onPress={handleAddComment}
+          >
+            <Text style={styles.commentButtonText}>Add Comment</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "lightgrey",
   },
   appHead: {
@@ -287,21 +300,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: "13%",
   },
+  butCon: {
+    flex: 1,
+    flexDirection: "row",
+    padding: 10,
+    justifyContent: "space-between",
+  },
   image: {
-    alignSelf: "flex-end",
-    height: "50%",
-    width: "20%",
-    borderRadius: 8,
+    height: 150,
+    width: 300,
   },
   eventHead: {
     backgroundColor: "snow",
   },
   eventContainer: {
-    flex: 1,
+    backgroundColor: "white",
+    margin: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   eventInfo: {
-    backgroundColor: "blue",
     padding: 5,
+    alignItems: "center",
+    margin: 5,
   },
   eventName: {
     fontSize: 30,
@@ -310,19 +333,32 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   eventLocation: {
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: "bold",
     color: "#3498db",
   },
   eventDescription: {
-    fontSize: 10,
+    fontSize: 15,
     color: "#7f8c8d",
   },
   eventDate: {
-    fontSize: 10,
+    fontSize: 15,
     fontStyle: "italic",
     fontWeight: "bold",
     color: "#3498db",
+  },
+  eventVillage: {
+    fontSize: 15,
+    fontStyle: "italic",
+    fontWeight: "bold",
+    color: "#3498db",
+  },
+  organizerSocialMedia: {
+    fontSize: 15,
+    fontStyle: "italic",
+    fontWeight: "bold",
+    color: "#3498db",
+    marginBottom: 10,
   },
   bButton: { padding: 10 },
 
@@ -335,6 +371,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     backgroundColor: "lightgrey",
     padding: 5,
+    height: 200,
   },
 
   innerCommentContainer: {
@@ -358,23 +395,19 @@ const styles = StyleSheet.create({
     marginBottom: 100,
   },
   content: {
-    fontSize: 15,
+    fontSize: 12,
     paddingLeft: 5,
     color: "#2c3e50",
   },
-  commentButtonContainer: {
-    backgroundColor: "lightgrey",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+
   eventCommentInput: {
-    height: 50,
-    padding: 3,
-    width: screenWidth * 0.8,
+    height: 40,
+    padding: 5,
+    backgroundColor: "white",
+    width: screenWidth * 0.5,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ddd",
-    marginTop: 10,
+    borderColor: "black",
   },
   commentButtonText: {
     fontSize: 12,
@@ -431,7 +464,7 @@ const styles = StyleSheet.create({
   commentUsername: {
     fontWeight: "bold",
     padding: 5,
-    fontSize: 10,
+    fontSize: 12,
     color: "snow",
   },
 });

@@ -308,14 +308,6 @@ const CreateEventScreen = ({ navigation, route }) => {
           placeholder="Organizer Social Media"
         />
 
-        <Text style={styles.sectionTitle}>Event Tags</Text>
-        <TextInput
-          style={styles.input}
-          value={eventTags.join(", ")}
-          onChangeText={(text) => setEventTags(text.split(", "))}
-          placeholder="Event Tags (comma-separated)"
-        />
-
         <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
           <Text style={styles.imagePickerButtonText}>Pick Image</Text>
         </TouchableOpacity>
