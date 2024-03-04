@@ -184,91 +184,82 @@ const CommentSection = ({ navigation, route }) => {
   const handleGoBack = () => {
     navigation.navigate("HomeScreen");
   };
-
+  //we got comment working, leave as it, dont use keyboard avoid in view
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : -2000} // Adjust as needed
-    >
-      <View style={styles.container}>
-        <View style={styles.appHead}>
-          <Text style={styles.titleText}>EventFinder</Text>
-          <Text style={styles.appHeadTitle}>Comment section</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.bButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Image
-            style={styles.bButtonImg}
-            source={require("../assets/left.png")}
-          />
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <View style={styles.appHead}>
+        <Text style={styles.titleText}>EventFinder</Text>
+        <Text style={styles.appHeadTitle}>Comment section</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.bButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Image
+          style={styles.bButtonImg}
+          source={require("../assets/left.png")}
+        />
+      </TouchableOpacity>
 
-        <View style={styles.eventContainer}>
+      <View style={styles.eventContainer}>
+        <View style={styles.eventInfo}>
+          <Text style={styles.eventName}>
+            {event.length > 0 && event[0].eventName}
+          </Text>
           <View style={styles.eventInfo}>
-            <Text style={styles.eventName}>
-              {event.length > 0 && event[0].eventName}
+            <Text style={styles.eventVillage}>
+              {event.length > 0 && event[0].eventVillage}
             </Text>
-            <View style={styles.eventInfo}>
-              <Text style={styles.eventVillage}>
-                {event.length > 0 && event[0].eventVillage}
-              </Text>
-              <Text style={styles.eventDate}>
-                Date: {event.length > 0 && event[0].eventDate}
-              </Text>
-              <Text style={styles.organizerSocialMedia}>
-                Poster: {event.length > 0 && event[0].organizerSocialMedia}
-              </Text>
-              {event.length > 0 && event[0].imageUrl && (
-                <Image
-                  source={{ uri: event[0].imageUrl }}
-                  style={styles.image}
-                />
-              )}
-            </View>
+            <Text style={styles.eventDate}>
+              Date: {event.length > 0 && event[0].eventDate}
+            </Text>
+            <Text style={styles.organizerSocialMedia}>
+              Poster: {event.length > 0 && event[0].organizerSocialMedia}
+            </Text>
+            {event.length > 0 && event[0].imageUrl && (
+              <Image source={{ uri: event[0].imageUrl }} style={styles.image} />
+            )}
           </View>
         </View>
-        <View style={styles.commentFlatListContainer}>
-          <FlatList
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-              />
-            }
-            data={comments}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item, index }) => (
-              // Start of inner flatlist content
-              <View key={index} style={styles.innerCommentContainer}>
-                <Text style={styles.commentUsername}>{item.username}: </Text>
-                <Text style={styles.content}>{item.content}</Text>
-                <Text style={styles.timestamp}>
-                  {new Date(item.timestamp).toLocaleString()}
-                </Text>
-              </View> // End inner 'comment' container
-            )}
-          />
-        </View>
-        <View style={styles.butCon}>
-          <TextInput
-            style={styles.eventCommentInput}
-            placeholder="Leave a comment.."
-            value={newComment}
-            onChangeText={(text) => setNewComment(text)}
-          />
-
-          <TouchableOpacity
-            style={styles.commentButton}
-            onPress={handleAddComment}
-          >
-            <Text style={styles.commentButtonText}>Add Comment</Text>
-          </TouchableOpacity>
-        </View>
       </View>
-    </KeyboardAvoidingView>
+      <View style={styles.commentFlatListContainer}>
+        <FlatList
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
+          }
+          data={comments}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item, index }) => (
+            // Start of inner flatlist content
+            <View key={index} style={styles.innerCommentContainer}>
+              <Text style={styles.commentUsername}>{item.username}: </Text>
+              <Text style={styles.content}>{item.content}</Text>
+              <Text style={styles.timestamp}>
+                {new Date(item.timestamp).toLocaleString()}
+              </Text>
+            </View> // End inner 'comment' container
+          )}
+        />
+      </View>
+      <View style={styles.butCon}>
+        <TextInput
+          style={styles.eventCommentInput}
+          placeholder="Leave a comment.."
+          value={newComment}
+          onChangeText={(text) => setNewComment(text)}
+        />
+
+        <TouchableOpacity
+          style={styles.commentButton}
+          onPress={handleAddComment}
+        >
+          <Text style={styles.commentButtonText}>Add Comment</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 

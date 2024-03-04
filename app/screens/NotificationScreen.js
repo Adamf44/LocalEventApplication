@@ -4,9 +4,10 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  StatusBar,
   TouchableOpacity,
   Image,
+  LinearGradient,
+  Dimensions,
 } from "react-native";
 import {
   collection,
@@ -20,12 +21,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-const NotificationScreen = () => {
+//Globals
+const screenWidth = Dimensions.get("window").width;
+const screenHeight = Dimensions.get("window").height;
+
+const NotificationScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
-  //use effect to control auth
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -41,7 +45,6 @@ const NotificationScreen = () => {
       }
     }, [isAuthenticated])
   );
-  console.log("User is authenticated on noti: " + isAuthenticated);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +59,6 @@ const NotificationScreen = () => {
           eventName: doc.data().eventName,
           attendees: doc.data().attendees || [],
         }));
-        console.log(eventsData);
         setEvents(eventsData);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -65,9 +67,9 @@ const NotificationScreen = () => {
 
     fetchData();
 
-    // Cleanup function
     return () => {};
   }, []);
+
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
@@ -77,46 +79,32 @@ const NotificationScreen = () => {
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
         <Text style={styles.appHeadTitle}>Notifications</Text>
-        <View style={styles.searchContainer}>
-          {isAuthenticated ? null : (
-            <TouchableOpacity
-              onPress={handleLoginPress}
-              style={styles.logInButton}
-            >
-              <Text style={styles.logInButtonText}>Log in</Text>
-            </TouchableOpacity>
-          )}
-        </View>
       </View>
-      <View style={styles.userNoti}>
-        <Text style={styles.userNotiTitle}>Notifications for {userEmail}.</Text>
-      </View>
-
-      <FlatList
-        data={events
-          .flatMap((event) =>
-            event.attendees.map((attendee) => ({
-              eventId: event.id,
-              eventName: event.eventName,
-              attendee,
-            }))
-          )
-          .reverse()} // Reverse the order of the flattened array
-        renderItem={({ item }) => (
-          <View style={styles.holder}>
+      <Text style={styles.userNotiTitle}>Notifications for {userEmail}.</Text>
+      <View style={styles.notiCon}>
+        <FlatList
+          data={events
+            .flatMap((event) =>
+              event.attendees.map((attendee) => ({
+                eventId: event.id,
+                eventName: event.eventName,
+                attendee,
+              }))
+            )
+            .reverse()}
+          renderItem={({ item }) => (
             <View style={styles.eventContainer}>
-              <Text style={styles.fromLabel}>From: </Text>
               <Text style={styles.eventName}>{item.eventName}</Text>
               <Text style={styles.attendees}>
                 {item.attendee} is registered for this event!
               </Text>
             </View>
-          </View>
-        )}
-        keyExtractor={(item, index) =>
-          `${item.eventId}_${item.attendee}_${index}`
-        } // Unique key for each item
-      />
+          )}
+          keyExtractor={(item, index) =>
+            `${item.eventId}_${item.attendee}_${index}`
+          }
+        />
+      </View>
     </View>
   );
 };
@@ -124,7 +112,7 @@ const NotificationScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "lightgrey",
+    backgroundColor: "#ecf0f1",
   },
   appHead: {
     flexDirection: "row",
@@ -142,7 +130,15 @@ const styles = StyleSheet.create({
     marginTop: "5%",
     padding: 10,
   },
-
+  navHomeImg: { height: 30, width: 30, opacity: 1 },
+  navButtons: { padding: 10 },
+  notiCon: {
+    borderWidth: 2,
+    margin: 10,
+    height: screenHeight * 0.7,
+    borderRadius: 20,
+    borderColor: "darkgrey",
+  },
   appHeadTitle: {
     fontSize: 18,
     color: "snow",
@@ -151,54 +147,19 @@ const styles = StyleSheet.create({
     marginTop: "13%",
   },
 
-  line: {
-    height: 2,
-    backgroundColor: "#3498db",
-    marginVertical: 5,
-  },
-  lines: {
-    height: 20,
-    width: 10,
-  },
-  userNoti: {
-    padding: 10,
-    alignItems: "center",
-  },
   userNotiTitle: {
     fontSize: 20,
     fontWeight: "bold",
+    fontStyle: "italic",
     color: "#2c3e50",
-    marginTop: 10,
-    marginBottom: 5,
-    textDecorationLine: "underline",
-    letterSpacing: 0.3,
   },
-
   logInButton: {
     backgroundColor: "#e74c3c",
     borderRadius: 8,
-    padding: 15,
-    width: 80,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  sectionTitle: {
-    alignSelf: "center",
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#3498db",
-    marginTop: 10,
-    marginBottom: 5,
-  },
-
-  title: {
-    fontSize: 24,
-    color: "#3498db",
-    marginBottom: 20,
-    fontWeight: "bold",
+    elevation: 2,
   },
   logInButtonText: {
     fontSize: 14,
@@ -211,26 +172,26 @@ const styles = StyleSheet.create({
   },
   eventContainer: {
     padding: 10,
-    borderWidth: 1,
-    marginTop: 5,
-    width: "90%",
-    alignSelf: "center",
-    borderBottomColor: "#ddd",
-    backgroundColor: "snow",
+    margin: 8,
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   eventName: {
     fontSize: 20,
-    color: "#e74c3c",
     fontWeight: "bold",
+    color: "#e74c3c",
   },
-  fromLabel: {},
   attendees: {
     fontSize: 15,
     fontStyle: "italic",
     color: "#2c3e50",
-    paddingHorizontal: 10,
     marginTop: 5,
-    letterSpacing: 0.2,
   },
 });
 
