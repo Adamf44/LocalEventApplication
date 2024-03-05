@@ -95,7 +95,9 @@ const HomeScreen = ({ navigation, route }) => {
 
   const fetchUserLocation = async () => {
     try {
+      //where user email is set
       const userEmail = await AsyncStorage.getItem("userEmail");
+      setUserEmail(userEmail);
       const userSnapshot = await getDocs(
         query(collection(db, "Users"), where("email", "==", userEmail))
       );
@@ -162,6 +164,8 @@ const HomeScreen = ({ navigation, route }) => {
           communityName,
           username,
           imageUrl,
+          bookmarkedBy,
+          attendees,
         } = doc.data();
         //if '!communityName' to check it is not a community event(As they are private to a user and who they invite)
         if (!communityName) {
@@ -178,6 +182,8 @@ const HomeScreen = ({ navigation, route }) => {
             eventVillage,
             username,
             imageUrl,
+            bookmarkedBy,
+            attendees,
           });
         }
       });
@@ -200,40 +206,47 @@ const HomeScreen = ({ navigation, route }) => {
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
-  //when user bookmarks event
-  const handleBookmark = async (eventName) => {
-    try {
-      const eventRef = doc(db, "Events", eventName);
-      const eventDoc = await getDoc(eventRef);
 
-      //get bookmarkedBy attribute for the event eventName
-      if (eventDoc.exists()) {
-        let { bookmarkedBy } = eventDoc.data();
+  const handleBookmark = (userEmail, eventName) => {
+    console.log("thththt" + eventName);
+    const eventRef = doc(db, "Events", eventName);
 
-        if (!bookmarkedBy) {
-          bookmarkedBy = [];
-        }
+    getDoc(eventRef)
+      .then((eventDoc) => {
+        if (eventDoc.exists()) {
+          let { bookmarkedBy } = eventDoc.data();
 
-        //check if users email is in bookmarkedBy already
-        if (!bookmarkedBy.includes(userEmail)) {
-          //if not add
-          await updateDoc(eventRef, {
-            bookmarkedBy: arrayUnion(userEmail),
-          });
-          Alert.alert("Event Bookmarked", "This event has been bookmarked.");
+          if (!bookmarkedBy) {
+            bookmarkedBy = [];
+          }
+
+          if (!bookmarkedBy.includes(userEmail)) {
+            // Add userEmail to bookmarkedBy array
+            bookmarkedBy.push(userEmail);
+            // Update bookmarkedBy array in Firestore
+            updateDoc(eventRef, { bookmarkedBy: bookmarkedBy })
+              .then(() => {
+                Alert.alert(
+                  "Event Bookmarked",
+                  "This event has been bookmarked."
+                );
+              })
+              .catch((error) => {
+                console.error("Error updating bookmarkedBy:", error);
+              });
+          } else {
+            Alert.alert("Already Bookmarked", "Already bookmarked this event.");
+          }
         } else {
-          Alert.alert("Already Bookmarked", "Already bookmarked this event.");
+          Alert.alert(
+            "Event Not Found",
+            "The event you are trying to bookmark does not exist."
+          );
         }
-      } else {
-        Alert.alert(
-          "Event Not Found",
-          "The event you are trying to bookmark does not exist."
-        );
-      }
-      //error for bookmark
-    } catch (error) {
-      console.error("Error bookmarking event:", error.message);
-    }
+      })
+      .catch((error) => {
+        console.error("Error bookmarking event:", error.message);
+      });
   };
 
   //show more
@@ -331,7 +344,7 @@ const HomeScreen = ({ navigation, route }) => {
 
                 <TouchableOpacity
                   style={styles.bookButton}
-                  onPress={() => handleBookmark(item.eventName)}
+                  onPress={() => handleBookmark(userEmail, item.eventName)}
                 >
                   <Icon
                     name="bookmark"

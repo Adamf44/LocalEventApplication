@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   LinearGradient,
+  RefreshControl,
   Dimensions,
 } from "react-native";
 import {
@@ -29,51 +30,49 @@ const NotificationScreen = ({ navigation }) => {
   const [events, setEvents] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
+    fetchData();
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
+      if (user) {
+        console.log("User is authenticated on home screen.");
+      }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [setIsAuthenticated]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!isAuthenticated) {
-      }
-    }, [isAuthenticated])
-  );
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const userEmail = await AsyncStorage.getItem("userEmail");
-        setUserEmail(userEmail);
-        const eventsQuerySnapshot = await getDocs(
-          query(collection(db, "Events"), where("userEmail", "==", userEmail))
-        );
-        const eventsData = eventsQuerySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          eventName: doc.data().eventName,
-          attendees: doc.data().attendees || [],
-        }));
-        setEvents(eventsData);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
-
-    fetchData();
-
-    return () => {};
-  }, []);
+  const fetchData = async () => {
+    setIsRefreshing(true);
+    try {
+      const userEmail = await AsyncStorage.getItem("userEmail");
+      setUserEmail(userEmail);
+      const eventsQuerySnapshot = await getDocs(
+        query(collection(db, "Events"), where("userEmail", "==", userEmail))
+      );
+      const eventsData = eventsQuerySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        eventName: doc.data().eventName,
+        attendees: doc.data().attendees || [],
+      }));
+      setEvents(eventsData);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
 
+  const handleRefresh = () => {
+    fetchData();
+  };
   return (
     <View style={styles.container}>
       <View style={styles.appHead}>
@@ -83,6 +82,12 @@ const NotificationScreen = ({ navigation }) => {
       <Text style={styles.userNotiTitle}>Notifications for {userEmail}.</Text>
       <View style={styles.notiCon}>
         <FlatList
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
+          }
           data={events
             .flatMap((event) =>
               event.attendees.map((attendee) => ({
@@ -96,7 +101,8 @@ const NotificationScreen = ({ navigation }) => {
             <View style={styles.eventContainer}>
               <Text style={styles.eventName}>{item.eventName}</Text>
               <Text style={styles.attendees}>
-                {item.attendee} is registered for this event!
+                <Text style={styles.notiUserText}> {item.attendee}</Text> is
+                registered for this event!
               </Text>
             </View>
           )}
@@ -133,10 +139,8 @@ const styles = StyleSheet.create({
   navHomeImg: { height: 30, width: 30, opacity: 1 },
   navButtons: { padding: 10 },
   notiCon: {
-    borderWidth: 2,
-    margin: 10,
+    margin: 20,
     height: screenHeight * 0.7,
-    borderRadius: 20,
     borderColor: "darkgrey",
   },
   appHeadTitle: {
@@ -152,6 +156,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontStyle: "italic",
     color: "#2c3e50",
+    textAlign: "center",
+    margin: 10,
   },
   logInButton: {
     backgroundColor: "#e74c3c",
@@ -170,6 +176,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
+  notiUserText: {
+    fontWeight: "bold",
+  },
   eventContainer: {
     padding: 10,
     margin: 8,
@@ -183,7 +192,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   eventName: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: "bold",
     color: "#e74c3c",
   },

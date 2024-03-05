@@ -21,7 +21,14 @@ import {
   getDownloadURL,
   uploadBytesResumable,
 } from "firebase/storage";
-import { collection, doc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "../database/config";
 import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -61,6 +68,7 @@ const CreateEventScreen = ({ navigation, route }) => {
   const [eventVillage, setEventVillage] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [uname, setUname] = useState("");
 
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -92,43 +100,44 @@ const CreateEventScreen = ({ navigation, route }) => {
     }
   }
 
-  //use effect to control auth
   useEffect(() => {
+    getUname();
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
+      if (user) {
+        console.log("User is authenticated on home screen.");
+      }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [setIsAuthenticated]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!isAuthenticated) {
-      }
-    }, [isAuthenticated])
-  );
-  console.log("User is authenticated on create event: " + isAuthenticated);
+  const getUname = async () => {
+    const userEmail = await AsyncStorage.getItem("userEmail");
+    setUserEmail(userEmail);
+
+    const userQuerySnapshot = await getDocs(
+      query(collection(db, "Users"), where("email", "==", userEmail))
+    );
+
+    if (!userQuerySnapshot.empty) {
+      const userData = userQuerySnapshot.docs[0].data();
+      console.log("Look here at e.g. A" + userData.username);
+      setUname(userData.username);
+    } else {
+      console.log("User not found in the Users collection");
+      return null;
+    }
+  };
 
   const createEvent = async () => {
     try {
-      const userEmail = await AsyncStorage.getItem("userEmail");
-      setUserEmail(userEmail);
-
-      if (!isAuthenticated) {
-        Alert.alert(
-          "Authentication Required",
-          "Please log in to create an event.",
-          [{ text: "OK", onPress: () => navigation.navigate("LoginScreen") }]
-        );
-        return;
-      }
       if (
         !eventName ||
         !eventDescription ||
         !eventStartTime ||
         !eventEndTime ||
-        !eventLocation ||
         !eventCounty ||
         !eventVillage
       ) {
@@ -146,7 +155,6 @@ const CreateEventScreen = ({ navigation, route }) => {
       await uploadBytesResumable(storageRef, imageBlob);
 
       const imageUrl = await getDownloadURL(storageRef);
-      console.log(" whistle wjhs" + imageUrl);
       const data = {
         eventName: eventName.trim(),
         eventDescription: eventDescription.trim(),
@@ -154,7 +162,7 @@ const CreateEventScreen = ({ navigation, route }) => {
         eventStartTime: eventStartTime.trim(),
         eventEndTime: eventEndTime.trim(),
         eventLocation: eventLocation.trim(),
-        username: username.trim(),
+        username: uname, // Use the username obtained from userData
         imageUrl,
         eventStatus,
         registrationStatus,
@@ -179,7 +187,6 @@ const CreateEventScreen = ({ navigation, route }) => {
       setEventEndTime("");
       setEventLocation("");
       setEventImage(null);
-      setUsername("");
       setEventStatus("Upcoming");
       setRegistrationStatus("Open");
       setRegistrationDeadline("");
@@ -191,7 +198,9 @@ const CreateEventScreen = ({ navigation, route }) => {
       setEventComments([]);
       setEventCounty("");
       setEventVillage("");
-      setUserEmail("");
+      setUserEmail(userEmail);
+      console.log("Look here at e.g. B" + uname);
+      setUsername("");
 
       Alert.alert("Success", "Successfully created an event!", [
         {
@@ -259,7 +268,7 @@ const CreateEventScreen = ({ navigation, route }) => {
           style={styles.input}
           value={eventCounty}
           onChangeText={(text) => setEventCounty(text)}
-          placeholder="County"
+          placeholder="County (E.g. Dublin, Meath, Kildare)"
         />
         <TextInput
           style={styles.input}

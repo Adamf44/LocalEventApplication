@@ -1,27 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
   StyleSheet,
-  Image,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
   Dimensions,
   StatusBar,
-  RefreshControl,
+  Image,
   Alert,
-  TextInput,
+  FlatList,
+  RefreshControl,
 } from "react-native";
-import { getDocs, query, collection, where } from "firebase/firestore";
-import { db } from "../database/config";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import firebase from "firebase/app";
+import { useFocusEffect } from "@react-navigation/native";
+import { useEffect } from "react/cjs/react.development";
+
+import "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  get,
+  updateDoc,
+  arrayUnion,
+  where,
+  getDoc,
+  deleteDoc,
+  query,
+} from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/FontAwesome";
+import { db } from "../database/config";
+import { useRoute } from "@react-navigation/native";
+import { set } from "firebase/database";
+import { auth } from "../database/config";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
-const EventBookmarks = ({ navigation, route }) => {
+function UserPostedEventsScreen({ navigation }) {
   const [userEmail, setUserEmail] = useState("");
   const [eventName, setEventName] = useState("");
   const [category, setCategory] = useState("");
@@ -37,7 +57,7 @@ const EventBookmarks = ({ navigation, route }) => {
 
   //use effect to get auth status
   useEffect(() => {
-    fetchBookmarkedEvents();
+    fetchPostedEvents();
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
@@ -49,19 +69,14 @@ const EventBookmarks = ({ navigation, route }) => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
-  ///////////
-
   //function to get Event data
-  const fetchBookmarkedEvents = () => {
+  const fetchPostedEvents = () => {
     setIsRefreshing(true);
     AsyncStorage.getItem("userEmail")
       .then((userEmail) => {
         setUserEmail(userEmail);
         return getDocs(
-          query(
-            collection(db, "Events"),
-            where("bookmarkedBy", "array-contains", userEmail)
-          )
+          query(collection(db, "Events"), where("userEmail", "==", userEmail))
         );
       })
       .then((querySnapshot) => {
@@ -111,26 +126,40 @@ const EventBookmarks = ({ navigation, route }) => {
         setIsRefreshing(false);
       });
   };
-  ///////////
-
-  //show more
-  const handleShowMorePress = (eventName) => {
-    console.log("handleShowMorePress called with eventName:", eventName);
-    navigation.navigate("ShowMoreScreen", { eventName, isAuthenticated });
-  };
-  const handleGoBack = () => {
-    navigation.navigate("ProfileScreen");
+  const handleDeleteEvent = async (eventID) => {
+    Alert.alert("Confirmation", "Are you sure you want to delete this event?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete",
+        onPress: async () => {
+          try {
+            await deleteDoc(doc(db, "Events", eventID));
+            // Remove the deleted event from the state
+            setBookmarkedEvents((prevEvents) =>
+              prevEvents.filter((event) => event.id !== eventID)
+            );
+            Alert.alert("Success", "Event deleted successfully.");
+          } catch (error) {
+            console.error("Error deleting event:", error);
+            Alert.alert("Error", "Failed to delete event.");
+          }
+        },
+        style: "destructive",
+      },
+    ]);
   };
 
   const handleRefresh = () => {
-    fetchBookmarkedEvents();
+    fetchPostedEvents();
   };
-
   return (
     <View style={styles.container}>
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
-        <Text style={styles.header}>Bookmarked Events</Text>
+        <Text style={styles.header}>Your Events</Text>
       </View>
       <TouchableOpacity
         style={styles.bButton}
@@ -158,12 +187,18 @@ const EventBookmarks = ({ navigation, route }) => {
             >
               <Text style={styles.showMoreButtonText}>Show More</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteEvent(item.id)}
+            >
+              <Text style={styles.deleteButtonText}>Delete Event</Text>
+            </TouchableOpacity>
           </View>
         )}
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -248,7 +283,24 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
-
+  deleteButton: {
+    backgroundColor: "#3498db",
+    borderRadius: 8,
+    height: 30,
+    width: "70%",
+    alignSelf: "flex-start",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  deleteButtonText: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
   bookButton: {
     backgroundColor: "#f39c12",
     opacity: 0.95,
@@ -341,4 +393,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EventBookmarks;
+export default UserPostedEventsScreen;

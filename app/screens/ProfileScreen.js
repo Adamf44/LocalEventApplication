@@ -108,6 +108,9 @@ const ProfileScreen = ({ navigation, route }) => {
     navigation.navigate("EditAccountScreen", { userEmail });
   };
 
+  const handleShowPostedEvent = async () => {
+    navigation.navigate("UserPostedEventsScreen", { userEmail });
+  };
   const handleRefresh = () => {
     setIsRefreshing(true);
     getUserAbout();
@@ -191,6 +194,15 @@ const ProfileScreen = ({ navigation, route }) => {
               <TouchableOpacity
                 style={styles.editButton}
                 onPress={() => handleEditAccount(userEmail)}
+              >
+                <Image
+                  style={styles.butImg}
+                  source={require("../assets/user-pen.png")}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => handleShowPostedEvent(userEmail)}
               >
                 <Image
                   style={styles.butImg}

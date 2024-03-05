@@ -218,7 +218,7 @@ const CommunityHome = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.appHead}>
-        <Text style={styles.titleText}>Community</Text>
+        <Text style={styles.titleText}>{comName}</Text>
         <TouchableOpacity
           style={styles.addEventButton}
           onPress={handleAddEvent}
@@ -338,7 +338,7 @@ const CommunityHome = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "lightgrey",
+    backgroundColor: "aliceblue",
   },
   appHead: {
     flexDirection: "row",
@@ -443,7 +443,7 @@ const styles = StyleSheet.create({
   innerContainer: {
     marginTop: "5%",
     borderWidth: 2,
-    backgroundColor: "snow",
+    backgroundColor: "gainsboro",
     borderColor: "darkgrey",
     borderRadius: 30,
     padding: 30,

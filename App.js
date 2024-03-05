@@ -16,6 +16,7 @@ import AttendEvent from "./app/screens/AttendEvent";
 import EventBookmarks from "./app/screens/EventBookmarks";
 import NavBar from "./app/screens/NavBar";
 import EditAccountScreen from "./app/screens/EditAccountScreen";
+import UserPostedEventsScreen from "./app/screens/UserPostedEventsScreen";
 
 const Stack = createStackNavigator();
 
@@ -98,6 +99,11 @@ export default function App() {
         <Stack.Screen
           name="EditAccountScreen"
           component={EditAccountScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="UserPostedEventsScreen"
+          component={UserPostedEventsScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
