@@ -40,6 +40,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../database/config";
 import { useRoute } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 //Globals
 const screenWidth = Dimensions.get("window").width;
@@ -54,6 +55,7 @@ const screenHeight = Dimensions.get("window").height;
 const HomeScreen = ({ navigation, route }) => {
   //variables
   const [event, setEvent] = useState([]);
+  const [userLocation, setUserLocation] = useState("");
   const [eventName, setEventName] = useState("");
   const [category, setCategory] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -67,11 +69,12 @@ const HomeScreen = ({ navigation, route }) => {
   const [userEmail, setUserEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredEvents, setFilteredEvent] = useState(event); // Initialize with event
+  const [eventAmount, setEventAmount] = useState("");
 
   //use effect to get auth status
   useEffect(() => {
     fetchData();
-
+    fetchUserLocation();
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
@@ -88,6 +91,49 @@ const HomeScreen = ({ navigation, route }) => {
       item.eventName.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredEvent(filteredEvents);
+  };
+
+  const fetchUserLocation = async () => {
+    try {
+      const userEmail = await AsyncStorage.getItem("userEmail");
+      const userSnapshot = await getDocs(
+        query(collection(db, "Users"), where("email", "==", userEmail))
+      );
+      if (!userSnapshot.empty) {
+        const userData = userSnapshot.docs[0].data();
+        const userLocation = userData.county; // Assuming eventLocation is the attribute name
+        setUserLocation(userLocation);
+        console.log("heyyyyyyyyyyyyy this is county" + userLocation);
+        return userLocation;
+      } else {
+        console.error("User not found");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching user location:", error);
+      return null;
+    }
+  };
+
+  const toggleEvents = () => {
+    if (filteredEvents === event || filteredEvents.length === 0) {
+      // User is currently viewing events from their county or all events, switch to events in their county
+      const eventsInUserCounty = event.filter(
+        (item) => item.eventCounty === userLocation
+      );
+      setEventAmount(eventsInUserCounty.length);
+      setFilteredEvent(eventsInUserCounty);
+    } else {
+      // User is currently viewing events in their county, switch to all events
+      setFilteredEvent(event);
+      setEventAmount(event.length);
+    }
+  };
+
+  // Function to filter events based on userLocation
+  const filterEventsByLocation = () => {
+    if (!userLocation) return event; // Return all events if user location is not available
+    return event.filter((item) => item.eventLocation === userLocation);
   };
 
   // Function to handle changes in the search input
@@ -137,6 +183,7 @@ const HomeScreen = ({ navigation, route }) => {
       });
 
       setEvent(events);
+      setEventAmount(events.length);
       setFilteredEvent(events); // Update filteredEvents state
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -194,7 +241,7 @@ const HomeScreen = ({ navigation, route }) => {
     console.log("handleShowMorePress called with eventName:", eventName);
     navigation.navigate("ShowMoreScreen", { eventName, isAuthenticated });
   };
-  //attend event
+
   const handleAttend = (userEmail, eventName) => {
     const eventRef = collection(db, "Events");
     const eventQuery = query(eventRef, where("eventName", "==", eventName));
@@ -206,11 +253,18 @@ const HomeScreen = ({ navigation, route }) => {
           const attendeesArray = eventDoc.data().attendees || [];
 
           if (!attendeesArray.includes(userEmail)) {
-            navigation.navigate("AttendEvent", {
-              userEmail,
-              eventName,
-              isAuthenticated,
-            });
+            // Add user to attendees array
+            const updatedAttendees = [...attendeesArray, userEmail];
+            updateDoc(eventDoc.ref, { attendees: updatedAttendees })
+              .then(() => {
+                Alert.alert(
+                  "Registration Successful",
+                  "You are now registered to attend the event."
+                );
+              })
+              .catch((error) => {
+                console.error("Error updating attendees:", error);
+              });
           } else {
             Alert.alert(
               "Already Registered",
@@ -249,16 +303,17 @@ const HomeScreen = ({ navigation, route }) => {
             onChangeText={handleSearch}
             value={searchQuery}
           />
-          {isAuthenticated ? null : (
-            <TouchableOpacity
-              onPress={handleLoginPress}
-              style={styles.logInButton}
-            >
-              <Text style={styles.logInButtonText}>Log in</Text>
-            </TouchableOpacity>
-          )}
         </View>
       </View>
+      <View style={styles.sortContainer}>
+        <TouchableOpacity style={styles.toggleButton} onPress={toggleEvents}>
+          <Text style={styles.toggleButtonText}>
+            {filteredEvents.length === 1 ? "Show All" : "Sort By Location"}
+          </Text>
+        </TouchableOpacity>
+        <Text style={styles.eventsFoundText}>{eventAmount} Events Found</Text>
+      </View>
+
       <View style={styles.flatListContainer}>
         <FlatList
           refreshControl={
@@ -267,8 +322,8 @@ const HomeScreen = ({ navigation, route }) => {
               onRefresh={handleRefresh}
             />
           }
-          data={filteredEvents} // Step 3: Use filtered events as data source
-          keyExtractor={(item) => item.eventName}
+          data={filteredEvents.length ? filteredEvents : event}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.innerContainer}>
               <View style={styles.eventCardHead}>
@@ -388,7 +443,7 @@ const styles = StyleSheet.create({
   searchBar: {
     backgroundColor: "snow",
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     borderRadius: 8,
     height: "45%",
     width: screenWidth * 0.5,
@@ -396,6 +451,39 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     fontSize: 15,
     color: "#2c3e50",
+  },
+  sortContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#e74c3c",
+    padding: 10,
+  },
+  toggleButton: {
+    justifyContent: "center",
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "black",
+    borderRadius: 10,
+    padding: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  toggleButtonText: {
+    fontSize: 15,
+    color: "#e74c3c",
+    alignSelf: "center",
+    fontStyle: "italic",
+    fontWeight: "bold",
+    padding: 5,
+  },
+  eventsFoundText: {
+    fontSize: 18.5,
+    color: "snow",
+    textAlign: "center",
+    fontStyle: "italic",
+    padding: 5,
   },
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////// Event style ; //////////////////////////////////////////////////////////////////
