@@ -141,6 +141,11 @@ function EditAccountScreen({ route, navigation }) {
     });
   }
 
+  function deleteUser() {
+    deleteDoc(doc(db, "Users", userEmail));
+    navigation.navigate("LoginScreen");
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.appHead}>
@@ -202,11 +207,19 @@ function EditAccountScreen({ route, navigation }) {
           placeholder="Email address.."
           style={styles.inputBox}
         ></TextInput>
-        <TouchableOpacity style={styles.button} onPress={editProfile}>
-          <Text style={styles.buttonText} onPress={console.log("pressed")}>
-            Update
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.butCon}>
+          <TouchableOpacity style={styles.button} onPress={editProfile}>
+            <Text style={styles.buttonText} onPress={console.log("pressed")}>
+              Update
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => deleteUser()}
+          >
+            <Text style={styles.deleteButtonText}>Delete Account</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -233,6 +246,13 @@ const styles = StyleSheet.create({
     marginTop: "5%",
     padding: 10,
   },
+  butCon: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginHorizontal: 10,
+    marginTop: "1%",
+  },
+
   navHomeImg: { height: 30, width: 30, opacity: 1 },
   navButtons: { padding: 10 },
 
@@ -258,6 +278,20 @@ const styles = StyleSheet.create({
     padding: 10,
     flex: 0.17,
   },
+  deleteButton: {
+    backgroundColor: "#e74c3c",
+    borderRadius: 8,
+    padding: 15,
+    alignSelf: "center",
+    width: 150,
+    margin: 5,
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
   mainCon: { flex: 1 },
   backText: {
     color: "navy",
@@ -276,19 +310,6 @@ const styles = StyleSheet.create({
     flex: 0.6,
   },
 
-  buttonDelete: {
-    backgroundColor: "navy",
-    borderRadius: 50,
-    alignSelf: "center",
-    padding: 10,
-    flex: 0.2,
-  },
-  buttonDeleteText: {
-    fontSize: 20,
-    color: "white",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
   labels: {
     fontSize: 20,
     color: "#2c3e50",

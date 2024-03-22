@@ -12,7 +12,15 @@ import {
   Alert,
   TextInput,
 } from "react-native";
-import { getDocs, query, collection, where } from "firebase/firestore";
+import {
+  getDocs,
+  query,
+  collection,
+  where,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../database/config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -126,11 +134,48 @@ const EventBookmarks = ({ navigation, route }) => {
     fetchBookmarkedEvents();
   };
 
+  const handleRemoveBookmark = (userEmail, eventName) => {
+    console.log("Removing bookmark for " + eventName);
+    const eventRef = doc(db, "Events", eventName);
+
+    getDoc(eventRef)
+      .then((eventDoc) => {
+        if (eventDoc.exists()) {
+          const { bookmarkedBy } = eventDoc.data() || [];
+
+          // Filter out the userEmail from the bookmarkedBy array
+          const updatedBookmarkedBy = bookmarkedBy.filter(
+            (email) => email !== userEmail
+          );
+
+          // Update bookmarkedBy array in Firestore
+          updateDoc(eventRef, { bookmarkedBy: updatedBookmarkedBy })
+            .then(() => {
+              Alert.alert(
+                "Bookmark Removed",
+                "This event has been removed from bookmarks."
+              );
+            })
+            .catch((error) => {
+              console.error("Error updating bookmarkedBy:", error);
+            });
+        } else {
+          Alert.alert(
+            "Event Not Found",
+            "The event you are trying to remove from bookmarks does not exist."
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error removing bookmark:", error.message);
+      });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
-        <Text style={styles.header}>Bookmarked Events</Text>
+        <Text style={styles.appHeadTitle}>Bookmarked Events</Text>
       </View>
       <TouchableOpacity
         style={styles.bButton}
@@ -158,6 +203,14 @@ const EventBookmarks = ({ navigation, route }) => {
             >
               <Text style={styles.showMoreButtonText}>Show More</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.removeBookmarkButton}
+              onPress={() => handleRemoveBookmark(userEmail, item.id)}
+            >
+              <Text style={styles.removeBookmarkButtonText}>
+                Remove Bookmark
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       />
@@ -168,17 +221,31 @@ const EventBookmarks = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    marginTop: StatusBar.currentHeight || 40,
+    backgroundColor: "lightgrey",
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    padding: 10,
     backgroundColor: "#3498db",
+    height: "13%",
+    marginTop: "0%",
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
+    padding: 10,
+  },
+
+  appHeadTitle: {
+    fontSize: 18,
+    color: "snow",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "13%",
   },
 
   bButton: { padding: 10 },
@@ -213,16 +280,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  header: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-  },
   eventCardHead: {
     flex: 1,
     flexDirection: "row",
@@ -233,6 +290,7 @@ const styles = StyleSheet.create({
   showMoreButton: {
     backgroundColor: "#3498db",
     borderRadius: 8,
+    margin: 5,
     height: 30,
     width: "70%",
     alignSelf: "flex-start",
@@ -243,6 +301,25 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   showMoreButtonText: {
+    fontSize: 12,
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  removeBookmarkButton: {
+    backgroundColor: "#e74c3c",
+    borderRadius: 8,
+    margin: 5,
+    height: 30,
+    width: "70%",
+    alignSelf: "flex-start",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  removeBookmarkButtonText: {
     fontSize: 12,
     color: "#fff",
     fontWeight: "bold",

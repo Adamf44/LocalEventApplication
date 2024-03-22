@@ -126,6 +126,7 @@ function UserPostedEventsScreen({ navigation }) {
         setIsRefreshing(false);
       });
   };
+
   const handleDeleteEvent = async (eventID) => {
     Alert.alert("Confirmation", "Are you sure you want to delete this event?", [
       {
@@ -159,7 +160,7 @@ function UserPostedEventsScreen({ navigation }) {
     <View style={styles.container}>
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
-        <Text style={styles.header}>Your Events</Text>
+        <Text style={styles.appHeadTitle}>Your Events</Text>
       </View>
       <TouchableOpacity
         style={styles.bButton}
@@ -170,32 +171,37 @@ function UserPostedEventsScreen({ navigation }) {
           source={require("../assets/left.png")}
         />
       </TouchableOpacity>
-      <FlatList
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
-        }
-        data={bookmarkedEvents}
-        keyExtractor={(item) => item.eventName}
-        renderItem={({ item }) => (
-          <View style={styles.innerContainer}>
-            <Text style={styles.eventName}>"{item.eventName}"</Text>
-            <Text style={styles.eventLocation}>{item.eventLocation}</Text>
-            <Text style={styles.eventDate}>{item.eventDate}</Text>
-            <TouchableOpacity
-              style={styles.showMoreButton}
-              onPress={() => handleShowMorePress(item.eventName)}
-            >
-              <Text style={styles.showMoreButtonText}>Show More</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => handleDeleteEvent(item.id)}
-            >
-              <Text style={styles.deleteButtonText}>Delete Event</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+      <View style={styles.flatListContainer}>
+        <FlatList
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
+          }
+          data={bookmarkedEvents}
+          keyExtractor={(item) => item.eventName}
+          renderItem={({ item }) => (
+            <View style={styles.innerContainer}>
+              <Text style={styles.eventName}>"{item.eventName}"</Text>
+              <Text style={styles.eventLocation}>{item.eventLocation}</Text>
+              <Text style={styles.eventDate}>{item.eventDate}</Text>
+              <TouchableOpacity
+                style={styles.showMoreButton}
+                onPress={() => handleShowMorePress(item.eventName)}
+              >
+                <Text style={styles.showMoreButtonText}>Show More</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeleteEvent(item.id)}
+              >
+                <Text style={styles.deleteButtonText}>Delete event</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      </View>
     </View>
   );
 }
@@ -203,17 +209,30 @@ function UserPostedEventsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    marginTop: StatusBar.currentHeight || 40,
+    backgroundColor: "lightgrey",
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    padding: 10,
     backgroundColor: "#3498db",
+    height: "13%",
+    marginTop: "0%",
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
+    padding: 10,
+  },
+  appHeadTitle: {
+    fontSize: 18,
+    color: "snow",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "13%",
   },
 
   bButton: { padding: 10 },
@@ -232,6 +251,7 @@ const styles = StyleSheet.create({
   flatListContainer: {
     flex: 1,
     padding: 16,
+    marginBottom: "15%",
   },
   innerContainer: {
     borderWidth: 1,
@@ -248,11 +268,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
+
   header: {
     fontSize: 18,
     fontWeight: "bold",
@@ -268,6 +284,7 @@ const styles = StyleSheet.create({
   showMoreButton: {
     backgroundColor: "#3498db",
     borderRadius: 8,
+    margin: 5,
     height: 30,
     width: "70%",
     alignSelf: "flex-start",
@@ -284,9 +301,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   deleteButton: {
-    backgroundColor: "#3498db",
+    backgroundColor: "#e74c3c",
     borderRadius: 8,
     height: 30,
+    margin: 5,
     width: "70%",
     alignSelf: "flex-start",
     justifyContent: "center",

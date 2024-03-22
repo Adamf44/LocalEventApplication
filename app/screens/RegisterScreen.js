@@ -63,6 +63,7 @@ const RegisterScreen = ({ navigation }) => {
         username: username.trim(),
         userBio: userBio.trim(),
         fullName: fullName.trim(),
+        county: county.trim(),
       };
 
       await setDoc(doc(db, "Users", user.uid), userData);
@@ -123,7 +124,6 @@ const RegisterScreen = ({ navigation }) => {
           onChangeText={(text) => setCounty(text)}
           placeholder="County"
           style={styles.input}
-          secureTextEntry
         />
         <TextInput
           value={userBio}

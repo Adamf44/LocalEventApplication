@@ -105,7 +105,7 @@ const HomeScreen = ({ navigation, route }) => {
         const userData = userSnapshot.docs[0].data();
         const userLocation = userData.county; // Assuming eventLocation is the attribute name
         setUserLocation(userLocation);
-        console.log("heyyyyyyyyyyyyy this is county" + userLocation);
+        console.log("User location is" + userLocation);
         return userLocation;
       } else {
         console.error("User not found");
@@ -208,7 +208,7 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   const handleBookmark = (userEmail, eventName) => {
-    console.log("thththt" + eventName);
+    console.log("bookmarked" + eventName);
     const eventRef = doc(db, "Events", eventName);
 
     getDoc(eventRef)

@@ -201,12 +201,12 @@ const ProfileScreen = ({ navigation, route }) => {
                 />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.editButton}
+                style={styles.hisButton}
                 onPress={() => handleShowPostedEvent(userEmail)}
               >
                 <Image
                   style={styles.butImg}
-                  source={require("../assets/user-pen.png")}
+                  source={require("../assets/history.png")}
                 />
               </TouchableOpacity>
             </View>
@@ -360,6 +360,18 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: "#2ecc71",
+    margin: "5%",
+    borderRadius: 8,
+    padding: 12,
+    width: "25%",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  hisButton: {
+    backgroundColor: "#f39c12",
     margin: "5%",
     borderRadius: 8,
     padding: 12,

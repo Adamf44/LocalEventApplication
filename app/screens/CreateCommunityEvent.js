@@ -34,7 +34,8 @@ console.log("Create community event page");
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
-const CreateCommunityEvent = ({ navigation }) => {
+const CreateCommunityEvent = ({ navigation, route }) => {
+  const { comName } = route.params || {};
   const [eventName, setEventName] = useState("");
   const [eventDescription, setEventDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -53,12 +54,13 @@ const CreateCommunityEvent = ({ navigation }) => {
   const [organizerSocialMedia, setOrganizerSocialMedia] = useState("");
   const [eventComments, setEventComments] = useState([]);
   const [eventCounty, setEventCounty] = useState("");
+  const [communityName, setCommunityName] = useState("");
   const [eventVillage, setEventVillage] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
-
   //use effect to get auth status
   useEffect(() => {
+    setCommunityName(comName);
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
@@ -104,7 +106,6 @@ const CreateCommunityEvent = ({ navigation }) => {
     try {
       const userEmail = await AsyncStorage.getItem("userEmail");
       setUserEmail(userEmail);
-
       if (!isAuthenticated) {
         Alert.alert(
           "Authentication Required",
@@ -125,7 +126,6 @@ const CreateCommunityEvent = ({ navigation }) => {
         Alert.alert("Error", "All fields are required.");
         return;
       }
-      console.log("skncnckn");
       const response = await fetch(eventImage);
 
       const imageBlob = await response.blob();
@@ -136,7 +136,6 @@ const CreateCommunityEvent = ({ navigation }) => {
       await uploadBytesResumable(storageRef, imageBlob);
 
       const imageUrl = await getDownloadURL(storageRef);
-      console.log(" whistle wjhs" + imageUrl);
       const data = {
         eventName: eventName.trim(),
         eventDescription: eventDescription.trim(),
@@ -158,6 +157,7 @@ const CreateCommunityEvent = ({ navigation }) => {
         eventCounty,
         eventVillage,
         userEmail,
+        communityName,
       };
 
       await setDoc(doc(db, "Events", eventName), data);

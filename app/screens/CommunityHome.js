@@ -130,7 +130,7 @@ const CommunityHome = ({ navigation, route }) => {
   };
 
   const handleAddEvent = () => {
-    navigation.navigate("CreateCommunityEvent");
+    navigation.navigate("CreateCommunityEvent", { comName });
   };
 
   const handleLoginPress = () => {
@@ -143,7 +143,7 @@ const CommunityHome = ({ navigation, route }) => {
   };
   const handleInviteUser = async () => {
     try {
-      console.log("heyyyyyyyyyyyyyyyyyyy123456" + comName);
+      console.log(comName);
       // Query to find the community document with the matching communityName
       const communityQuery = query(
         collection(db, "Communities"),
