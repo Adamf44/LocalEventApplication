@@ -23,10 +23,6 @@ const Stack = createStackNavigator();
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    // You can implement authentication logic here to update isAuthenticated state
-  }, []);
-
   return (
     <NavigationContainer>
       <Stack.Navigator>

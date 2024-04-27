@@ -36,9 +36,7 @@ const ProfileScreen = ({ navigation, route }) => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      if (user) {
-        console.log("User is authenticated on profile screen.");
-      }
+      console.log("User navigated to profile screen.");
     });
 
     return () => unsubscribe();

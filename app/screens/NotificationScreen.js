@@ -37,9 +37,7 @@ const NotificationScreen = ({ navigation }) => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      if (user) {
-        console.log("User is authenticated on home screen.");
-      }
+      console.log("User navigated to notification screen");
     });
 
     return () => unsubscribe();
@@ -140,7 +138,7 @@ const styles = StyleSheet.create({
   navButtons: { padding: 10 },
   notiCon: {
     margin: 20,
-    height: screenHeight * 0.7,
+    height: screenHeight,
     borderColor: "darkgrey",
   },
   appHeadTitle: {

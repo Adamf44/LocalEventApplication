@@ -81,7 +81,7 @@ const CreateEventScreen = ({ navigation, route }) => {
     if (!result.cancelled) {
       // Check if assets array exists and has at least one item
       if (result.assets && result.assets.length > 0) {
-        // Access the first selected asset (assuming single selection)
+        // Access the first item
         const selectedAsset = result.assets[0];
         // Assigning response to image user picked
         const response = await fetch(selectedAsset.uri);
@@ -105,9 +105,6 @@ const CreateEventScreen = ({ navigation, route }) => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      if (user) {
-        console.log("User is authenticated on home screen.");
-      }
     });
 
     return () => unsubscribe();
@@ -123,7 +120,6 @@ const CreateEventScreen = ({ navigation, route }) => {
 
     if (!userQuerySnapshot.empty) {
       const userData = userQuerySnapshot.docs[0].data();
-      console.log("Look here at e.g. A" + userData.username);
       setUname(userData.username);
     } else {
       console.log("User not found in the Users collection");
@@ -144,7 +140,41 @@ const CreateEventScreen = ({ navigation, route }) => {
         Alert.alert("Error", "All fields are required.");
         return;
       }
-      console.log("skncnckn");
+
+      if (eventName.length < 4) {
+        Alert.alert("Event name must be longer than 4 characters!");
+        return;
+      }
+      if (eventDescription.length < 4) {
+        Alert.alert("Event Description must be longer than 10 characters!");
+        return;
+      }
+      if (eventCounty.length < 4) {
+        Alert.alert("Event county must be longer than 4 characters!");
+        return;
+      }
+      if (eventVillage.length < 3) {
+        Alert.alert("Town / village must be longer than 4 characters!");
+        return;
+      }
+      if (eventLocation.length < 4) {
+        Alert.alert("Event location must be longer than 4 characters!");
+        return;
+      }
+      if (numberTest(eventStartTime) == false) {
+        Alert.alert("Please enter a valid start/end time!");
+        return;
+      }
+      if (numberTest(eventEndTime) == false) {
+        Alert.alert("Please enter a valid start/end time!");
+        return;
+      }
+
+      if (numberTest(organizerContact) == false) {
+        Alert.alert("Contact number must be longer than 10 characters!");
+        return;
+      }
+
       const response = await fetch(eventImage);
 
       const imageBlob = await response.blob();
@@ -218,6 +248,11 @@ const CreateEventScreen = ({ navigation, route }) => {
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
+
+  function numberTest(string) {
+    //If string contains at least one number
+    return /[1-9]/.test(string);
+  }
 
   /////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////////////

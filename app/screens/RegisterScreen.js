@@ -32,9 +32,6 @@ import { useRoute } from "@react-navigation/native";
 import { set } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-//nav log
-console.log("Register screen");
-
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
@@ -45,13 +42,72 @@ const RegisterScreen = ({ navigation }) => {
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [county, setCounty] = useState("");
+  const [existingUsernames, setExistingUsernames] = useState("");
 
   const createUser = async () => {
+    //validation
     try {
       if (!email || !username || !fullName || !userBio || !password) {
         Alert.alert("Error", "All fields are required.");
         return;
       }
+
+      //first name
+      if (username == "") {
+        Alert.alert("First name field is empty!");
+      } else if (username.length < 5) {
+        Alert.alert("Username must be longer than 5 characters!");
+      } else if (checkIfUsernameExists(username)) {
+        Alert.alert("Username already exists");
+        return;
+      }
+
+      //Email
+      if (email == "") {
+        Alert.alert("Email field is empty!");
+      } else if (validEmail(email) == false) {
+        Alert.alert("Invalid email!");
+      }
+
+      //full name
+      if (fullName == "") {
+        Alert.alert("Full name field is empty!");
+        return;
+      } else if (fullName.length < 4) {
+        Alert.alert("Full name must be longer than 4 characters!");
+        return;
+      }
+
+      //full name
+      if (county == "") {
+        Alert.alert("County field is empty!");
+        return;
+      } else if (numberTest(county) == true) {
+        Alert.alert("Please enter a valid county!");
+      }
+      //full name
+      if (userBio == "") {
+        Alert.alert("User bio field is empty!");
+        return;
+      } else if (userBio.length < 10) {
+        Alert.alert("User bio must be longer than 10 characters!");
+        return;
+      }
+
+      //Password
+      if (password == "") {
+        Alert.alert("Password field is empty!");
+      } else if (password.length < 6) {
+        Alert.alert("password must be longer than 6 characters");
+        return;
+      } else if (upperCaseTest(password) == false) {
+        Alert.alert("Password must contain an upper case letter!");
+        return;
+      } else if (numberTest(password) == false) {
+        Alert.alert("Password must contain a number!");
+        return;
+      }
+
       const auth = getAuth();
 
       await createUserWithEmailAndPassword(auth, email, password);
@@ -67,19 +123,63 @@ const RegisterScreen = ({ navigation }) => {
       };
 
       await setDoc(doc(db, "Users", user.uid), userData);
+      //setting user email as async item
+      await AsyncStorage.setItem("userEmail", email);
 
       Alert.alert("Success", "You have successfully signed up!", [
         {
           text: "OK",
-          onPress: () => navigation.navigate("HomeScreen"),
+          // onPress: () => navigation.navigate("HomeScreen"),
+          onPress: () =>
+            navigation.navigate("HomeScreen", {
+              userEmail: email,
+              isAuthenticated: true,
+            }),
         },
       ]);
     } catch (error) {
       console.error("Error creating user: ", error.message);
       Alert.alert("Error", "Failed to sign up. Please try again later.");
     }
-  };
+    function validEmail(string) {
+      var res1 = /[@]/.test(string);
+      var res2 = /[.]/.test(string);
 
+      if (res1 && res2) {
+        return true;
+      }
+      return false;
+    }
+    //Specific tests - methods return true/false
+    function upperCaseTest(string) {
+      //If string contains at least one  Upper case letter
+      return /[A-Z]/.test(string);
+    }
+    function numberTest(string) {
+      //If string contains at least one number
+      return /[1-9]/.test(string);
+    }
+    async function readExistingUsernames() {
+      const docSnap = await getDocs(collection(db, "Users"));
+      const usernames = docSnap.docs.map((doc) => doc.data().username);
+      console.log("Fetched usernames:", usernames);
+      return usernames;
+    }
+
+    // Function to check if a username exists
+    async function checkIfUsernameExists(usr) {
+      const existingUsernames = await readExistingUsernames();
+      const Names = existingUsernames.map((name) => name.toUpperCase());
+
+      if (Names.includes(usr.toUpperCase())) {
+        console.log("Username exists");
+        return true;
+      } else {
+        console.log("Username doesn't exist");
+        return false;
+      }
+    }
+  };
   return (
     <View style={styles.container}>
       <View style={styles.appHead}>

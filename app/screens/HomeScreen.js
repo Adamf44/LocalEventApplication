@@ -79,7 +79,7 @@ const HomeScreen = ({ navigation, route }) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
       if (user) {
-        console.log("User is authenticated on home screen.");
+        console.log("User authenticated on home screen.");
       }
     });
 
@@ -93,6 +93,7 @@ const HomeScreen = ({ navigation, route }) => {
     setFilteredEvent(filteredEvents);
   };
 
+  //function to get users location to allow them to filter events to their county
   const fetchUserLocation = async () => {
     try {
       //where user email is set
@@ -102,13 +103,15 @@ const HomeScreen = ({ navigation, route }) => {
         query(collection(db, "Users"), where("email", "==", userEmail))
       );
       if (!userSnapshot.empty) {
+        //read the data for the user that matches the async email set at login
         const userData = userSnapshot.docs[0].data();
-        const userLocation = userData.county; // Assuming eventLocation is the attribute name
+        //get county
+        const userLocation = userData.county;
         setUserLocation(userLocation);
-        console.log("User location is" + userLocation);
+        console.log("User county: " + userLocation);
         return userLocation;
       } else {
-        console.error("User not found");
+        console.error("User email not found");
         return null;
       }
     } catch (error) {
@@ -138,10 +141,9 @@ const HomeScreen = ({ navigation, route }) => {
     return event.filter((item) => item.eventLocation === userLocation);
   };
 
-  // Function to handle changes in the search input
   const handleSearch = (query) => {
     setSearchQuery(query);
-    filterEvents(query); // Step 2: Call function to filter events
+    filterEvents(query);
   };
 
   //function to get Event data

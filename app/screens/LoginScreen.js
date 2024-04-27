@@ -52,15 +52,12 @@ function LoginScreen({ navigation }) {
         Alert.alert("Error", "Both email and password are required.");
         return;
       }
-
       const auth = getAuth();
-
       await signInWithEmailAndPassword(auth, email, password);
 
       //setting user email as async item
       await AsyncStorage.setItem("userEmail", email);
-
-      console.log("Authentication succeeded for user: " + email);
+      console.log("Authentication succeeded from login for user: " + email);
 
       navigation.navigate("HomeScreen", {
         userEmail: email,
@@ -178,8 +175,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     marginTop: "5%",
-    elevation: 2, // Set elevation to ensure the button is above the image
-    zIndex: 1, // Set zIndex to ensure the button is above the image
+    elevation: 2,
+    zIndex: 1,
   },
   title: {
     padding: 10,
@@ -196,8 +193,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 10,
     fontSize: 20,
-    elevation: 2, // Set elevation to ensure the button is above the image
-    zIndex: 1, // Set zIndex to ensure the button is above the image
+    elevation: 2,
+    zIndex: 1,
   },
   button: {
     backgroundColor: "#e74c3c",
@@ -207,8 +204,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     justifyContent: "center",
     marginTop: 10,
-    elevation: 2, // Set elevation to ensure the button is above the image
-    zIndex: 1, // Set zIndex to ensure the button is above the image
+    elevation: 2,
+    zIndex: 1,
   },
   registerButton: {
     backgroundColor: "#3498db",
@@ -218,8 +215,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     justifyContent: "center",
     marginTop: 10,
-    elevation: 2, // Set elevation to ensure the button is above the image
-    zIndex: 1, // Set zIndex to ensure the button is above the image
+    elevation: 2,
+    zIndex: 1,
   },
   registerButtonText: {
     color: "#fff",

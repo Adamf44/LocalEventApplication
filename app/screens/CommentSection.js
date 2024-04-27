@@ -161,7 +161,7 @@ const CommentSection = ({ navigation, route }) => {
           eventComments: arrayUnion({
             username: username,
             content: newComment.trim(),
-            timestamp: new Date().toISOString(), // Add current timestamp
+            timestamp: new Date().toISOString(),
           }),
         });
 
@@ -184,81 +184,90 @@ const CommentSection = ({ navigation, route }) => {
   const handleGoBack = () => {
     navigation.navigate("HomeScreen");
   };
-  //we got comment working, leave as it, dont use keyboard avoid in view
+
   return (
     <View style={styles.container}>
-      <View style={styles.appHead}>
-        <Text style={styles.titleText}>EventFinder</Text>
-        <Text style={styles.appHeadTitle}>Comment section</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.bButton}
-        onPress={() => navigation.goBack()}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : ""}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 200 : 0} // Adjust based on your layout
       >
-        <Image
-          style={styles.bButtonImg}
-          source={require("../assets/left.png")}
-        />
-      </TouchableOpacity>
+        <View style={styles.appHead}>
+          <Text style={styles.titleText}>EventFinder</Text>
+          <Text style={styles.appHeadTitle}>Comment section</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.bButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Image
+            style={styles.bButtonImg}
+            source={require("../assets/left.png")}
+          />
+        </TouchableOpacity>
 
-      <View style={styles.eventContainer}>
-        <View style={styles.eventInfo}>
-          <Text style={styles.eventName}>
-            {event.length > 0 && event[0].eventName}
-          </Text>
+        <View style={styles.eventContainer}>
           <View style={styles.eventInfo}>
-            <Text style={styles.eventVillage}>
-              {event.length > 0 && event[0].eventVillage}
+            <Text style={styles.eventName}>
+              {event.length > 0 && event[0].eventName}
             </Text>
-            <Text style={styles.eventDate}>
-              Date: {event.length > 0 && event[0].eventDate}
-            </Text>
-            <Text style={styles.organizerSocialMedia}>
-              Poster: {event.length > 0 && event[0].organizerSocialMedia}
-            </Text>
-            {event.length > 0 && event[0].imageUrl && (
-              <Image source={{ uri: event[0].imageUrl }} style={styles.image} />
-            )}
+            <View style={styles.eventInfo}>
+              <Text style={styles.eventVillage}>
+                {event.length > 0 && event[0].eventVillage}
+              </Text>
+              <Text style={styles.eventDate}>
+                Date: {event.length > 0 && event[0].eventDate}
+              </Text>
+              <Text style={styles.organizerSocialMedia}>
+                Poster: {event.length > 0 && event[0].organizerSocialMedia}
+              </Text>
+              {event.length > 0 && event[0].imageUrl && (
+                <Image
+                  source={{ uri: event[0].imageUrl }}
+                  style={styles.image}
+                />
+              )}
+            </View>
           </View>
         </View>
-      </View>
-      <View style={styles.commentFlatListContainer}>
-        <FlatList
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-          data={comments}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item, index }) => (
-            // Start of inner flatlist content
-            <View key={index} style={styles.innerCommentContainer}>
-              <Text style={styles.commentUsername}>{item.username}: </Text>
-              <Text style={styles.content}>{item.content}</Text>
-              <Text style={styles.timestamp}>
-                {new Date(item.timestamp).toLocaleString()}
-              </Text>
-            </View> // End inner 'comment' container
-          )}
-        />
-      </View>
-      <View style={styles.butCon}>
-        <TextInput
-          style={styles.eventCommentInput}
-          placeholder="Leave a comment.."
-          value={newComment}
-          onChangeText={(text) => setNewComment(text)}
-        />
+        <View style={styles.commentFlatListContainer}>
+          <FlatList
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+            data={comments}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, index }) => (
+              // Start of inner flatlist content
+              <View key={index} style={styles.innerCommentContainer}>
+                <Text style={styles.commentUsername}>{item.username}: </Text>
+                <Text style={styles.content}>{item.content}</Text>
+                <Text style={styles.timestamp}>
+                  {new Date(item.timestamp).toLocaleString()}
+                </Text>
+              </View> // End inner 'comment' container
+            )}
+          />
+        </View>
+        <View style={styles.butCon}>
+          <TextInput
+            style={styles.eventCommentInput}
+            placeholder="Leave a comment.."
+            value={newComment}
+            onChangeText={(text) => setNewComment(text)}
+          />
 
-        <TouchableOpacity
-          style={styles.commentButton}
-          onPress={handleAddComment}
-        >
-          <Text style={styles.commentButtonText}>Add Comment</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.commentButton}
+            onPress={handleAddComment}
+          >
+            <Text style={styles.commentButtonText}>Add Comment</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 };
@@ -292,21 +301,20 @@ const styles = StyleSheet.create({
     marginTop: "13%",
   },
   butCon: {
-    flex: 1,
     flexDirection: "row",
     padding: 10,
     justifyContent: "space-between",
   },
   image: {
-    height: 150,
-    width: 300,
+    height: 100,
+    width: 250,
   },
   eventHead: {
     backgroundColor: "snow",
   },
   eventContainer: {
     backgroundColor: "white",
-    margin: 20,
+    margin: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -362,17 +370,17 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     backgroundColor: "lightgrey",
     padding: 5,
-    height: 200,
+    height: "30%",
   },
 
   innerCommentContainer: {
     padding: 5,
     borderWidth: 1,
-    borderColor: "snow",
-    backgroundColor: "darkgrey",
+    borderColor: "#2c3e50",
+    backgroundColor: "snow",
   },
   timestamp: {
-    color: "snow",
+    color: "#3498db",
     alignSelf: "flex-end",
     fontSize: 12,
   },
@@ -381,9 +389,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#2ecc71",
     borderRadius: 8,
     height: 35,
-    width: "40%",
+    width: "30%",
     justifyContent: "center",
-    marginBottom: 100,
+    marginBottom: 50,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   content: {
     fontSize: 12,
@@ -395,7 +407,7 @@ const styles = StyleSheet.create({
     height: 40,
     padding: 5,
     backgroundColor: "white",
-    width: screenWidth * 0.5,
+    width: screenWidth * 0.6,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "black",
@@ -456,7 +468,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     padding: 5,
     fontSize: 12,
-    color: "snow",
+    color: "#3498db",
   },
 });
 

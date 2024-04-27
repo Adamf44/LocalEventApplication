@@ -28,9 +28,6 @@ import { useFocusEffect } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useRoute } from "@react-navigation/native";
 
-//nav log
-console.log("Create community event page");
-
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
@@ -83,7 +80,7 @@ const CreateCommunityEvent = ({ navigation, route }) => {
     if (!result.cancelled) {
       // Check if assets array exists and has at least one item
       if (result.assets && result.assets.length > 0) {
-        // Access the first selected asset (assuming single selection)
+        // Access the first item
         const selectedAsset = result.assets[0];
         // Assigning response to image user picked
         const response = await fetch(selectedAsset.uri);

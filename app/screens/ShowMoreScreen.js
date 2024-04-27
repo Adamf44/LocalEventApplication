@@ -183,16 +183,7 @@ const ShowMoreScreen = ({ navigation, route }) => {
     <View style={styles.container}>
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
-        <View style={styles.searchContainer}>
-          {!isAuthenticated && (
-            <TouchableOpacity
-              onPress={handleLoginPress}
-              style={styles.logInButton}
-            >
-              <Text style={styles.logInButtonText}>Log in</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <Text style={styles.appHeadTitle}>Show more screen</Text>
       </View>
 
       <View style={styles.flatListContainer}>
@@ -233,34 +224,37 @@ const ShowMoreScreen = ({ navigation, route }) => {
                     End: {item.eventEndTime}
                   </Text>
                 </View>
+                <View style={styles.infoCon}>
+                  <Text style={styles.infoBox}>
+                    Event status: {item.eventStatus}
+                  </Text>
+                  <Text style={styles.infoBox}>
+                    Registration status: {item.registrationStatus}
+                  </Text>
+                  <Text style={styles.infoBox}>
+                    Registration deadline: {item.registrationDeadline}
+                  </Text>
 
-                <Text style={styles.infoBox}>
-                  Event status: {item.eventStatus}
-                </Text>
-                <Text style={styles.infoBox}>
-                  Registration status: {item.registrationStatus}
-                </Text>
-                <Text style={styles.infoBox}>
-                  Registration deadline: {item.registrationDeadline}
-                </Text>
+                  <Text style={styles.infoBox}>
+                    Attendee count: {item.attendeeCount}
+                  </Text>
 
-                <Text style={styles.infoBox}>
-                  Attendee count: {item.attendeeCount}
-                </Text>
+                  <Text style={styles.infoBox}>
+                    Name of organizer: {item.organizerName}
+                  </Text>
+                  <Text style={styles.infoBox}>
+                    Contact {item.organizerName}: {item.organizerContact}
+                  </Text>
+                  <Text style={styles.infoBox}>
+                    Find {item.organizerName} on social media:
+                    {item.organizerSocialMedia}
+                  </Text>
 
-                <Text style={styles.infoBox}>
-                  Name of organizer: {item.organizerName}
-                </Text>
-                <Text style={styles.infoBox}>
-                  Contact {item.organizerName}: {item.organizerContact}
-                </Text>
-                <Text style={styles.infoBox}>
-                  Find {item.organizerName} on social media:
-                  {item.organizerSocialMedia}
-                </Text>
-
-                <Text style={styles.infoBox}>County: {item.eventCounty}</Text>
-                <Text style={styles.infoBox}>Village: {item.eventVillage}</Text>
+                  <Text style={styles.infoBox}>County: {item.eventCounty}</Text>
+                  <Text style={styles.infoBox}>
+                    Village: {item.eventVillage}
+                  </Text>
+                </View>
               </View>
               <View style={styles.buttonContainer}>
                 {NameInAttendee ? null : (
@@ -290,17 +284,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "lightgrey",
-    marginTop: StatusBar.currentHeight || 40,
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    padding: 10,
     backgroundColor: "#3498db",
+    height: "13%",
+    marginTop: "0%",
   },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "snow",
+    alignSelf: "center",
+    marginTop: "5%",
+    padding: 10,
+  },
+  appHeadTitle: {
+    fontSize: 18,
+    color: "snow",
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: "13%",
+  },
+
   detailsContainer: {
     marginTop: 10,
   },
@@ -324,7 +332,7 @@ const styles = StyleSheet.create({
     backgroundColor: "lightgrey",
     borderColor: "#ddd",
     padding: 10,
-    marginBottom: screenHeight * 0.1,
+    marginBottom: screenHeight + 25,
     width: screenWidth,
     alignSelf: "center",
     shadowColor: "#000",
@@ -335,11 +343,6 @@ const styles = StyleSheet.create({
   },
   navButtons: { padding: 10 },
   navHomeImg: { height: 30, width: 30, opacity: 1 },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
 
   logInButton: {
     backgroundColor: "#e74c3c",
@@ -368,10 +371,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderColor: "#2c3e50",
     borderWidth: 1,
-    height: 30,
+    height: 40,
     justifyContent: "center",
-    width: "70%",
-    alignSelf: "flex-start",
+    width: "60%",
+    alignSelf: "center",
     marginTop: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -458,11 +461,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   //////////////////////////////////////////////////////////////
+  infoCon: {
+    borderWidth: 1,
+    padding: 5,
+    backgroundColor: "snow",
+    borderColor: "darkgrey",
+    borderRadius: 30,
+  },
   infoBox: {
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: "bold",
-    color: "#2c3e50",
-    backgroundColor: "darkgrey",
+    color: "#3498db",
     padding: 10,
     marginTop: 1,
   },

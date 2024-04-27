@@ -69,11 +69,9 @@ function EditAccountScreen({ route, navigation }) {
       where("email", "==", userEmail)
     );
 
-    // Execute the query
     getDocs(userQuery)
       .then((querySnapshot) => {
         if (!querySnapshot.empty) {
-          // Assuming there's only one document with the matching email
           const userDoc = querySnapshot.docs[0].ref;
 
           // Update the document with the new data

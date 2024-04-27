@@ -59,13 +59,11 @@ const CommunitiesTab = () => {
 
   //use effect to get auth status
   useEffect(() => {
+    console.log("User navigated to active communities tab");
     //fetchUserCommunities();
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      if (user) {
-        console.log("User is authenticated on home screen.");
-      }
     });
 
     return () => unsubscribe();
@@ -78,19 +76,17 @@ const CommunitiesTab = () => {
         try {
           const value = await AsyncStorage.getItem("userEmail");
           setUserEmail(value);
-          console.log("User email:", value); // Debugging statement
           if (value !== null) {
             getDocs(
               query(
                 collection(db, "Communities"),
-                where("userEmail", "array-contains", value) // Check if userEmails array contains the user's email
+                where("userEmail", "array-contains", value)
               )
             ).then((docSnap) => {
-              console.log("Documents fetched:", docSnap.docs.length); // Debugging statement
               setComAmount(docSnap.docs.length);
               let info = [];
               docSnap.forEach((doc) => {
-                const { communityName, description } = doc.data(); // Removed userEmail since it's already filtered
+                const { communityName, description } = doc.data();
                 info.push({
                   ...doc.data(),
                   id: doc.id,
@@ -98,7 +94,6 @@ const CommunitiesTab = () => {
                   description,
                 });
               });
-              console.log("User communities:", info); // Debugging statement
               setUserCommunities(info);
             });
           } else {
@@ -117,7 +112,7 @@ const CommunitiesTab = () => {
   );
 
   handleActiveCommunitiesNav = (comName) => {
-    console.log("this is definedddddddddddddddd" + comName);
+    console.log("User naviagted to their active communities, " + comName);
     navigation.navigate("CommunityHome", { comName });
   };
 
@@ -189,13 +184,11 @@ const CreateTab = () => {
   const navigation = useNavigation();
   //use effect to get auth status
   useEffect(() => {
+    console.log("User navigated to create community tab");
     //fetchUserCommunities();
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      if (user) {
-        console.log("User is authenticated on home screen.");
-      }
     });
 
     return () => unsubscribe();
@@ -205,7 +198,6 @@ const CreateTab = () => {
     try {
       const userEmail = await AsyncStorage.getItem("userEmail");
       if (!userEmail) {
-        // Handle case where user email is not available
         console.log("User email not found in AsyncStorage");
         return;
       }
@@ -371,9 +363,9 @@ const styles = StyleSheet.create({
   flatListContainer: {
     flex: 1,
     padding: 15,
-    position: "relative", // Position the FlatList relative to its parent
-    top: 20, // Adjust top position as needed
-    zIndex: 1, // Set zIndex to ensure the FlatList is above the image
+    position: "relative",
+    top: 20,
+    zIndex: 1,
   },
   createContainer: {
     flex: 1,
@@ -451,8 +443,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     width: 150,
     marginTop: 30,
-    elevation: 2, // Set elevation to ensure the button is above the image
-    zIndex: 1, // Set zIndex to ensure the button is above the image
+    elevation: 2,
+    zIndex: 1,
   },
   createButtonText: {
     fontSize: 16,

@@ -62,9 +62,6 @@ const CommunityHome = ({ navigation, route }) => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      if (user) {
-        console.log("User is authenticated on profile screen.");
-      }
     });
 
     return () => unsubscribe();
@@ -76,7 +73,6 @@ const CommunityHome = ({ navigation, route }) => {
       setUserEmail(value);
       if (value !== null) {
         setUserEmail(value);
-        console.log("thisisir" + comName);
         getDocs(
           query(collection(db, "Events"), where("communityName", "==", comName))
         ).then((docSnap) => {
@@ -156,12 +152,12 @@ const CommunityHome = ({ navigation, route }) => {
         const communityDoc = querySnapshot.docs[0];
         const communityRef = doc(db, "Communities", communityDoc.id);
 
-        // Update the document to add the user's email to the userEmails array
+        // Update the document to add the user email to the userEmails array
         await updateDoc(communityRef, {
           userEmail: arrayUnion(inviteEmail),
         });
 
-        setInviteEmail(""); // Clear the input after adding to Firestore
+        setInviteEmail("");
         Alert.alert(
           "User added to community",
           "User has been added to the community successfully."
@@ -259,7 +255,7 @@ const CommunityHome = ({ navigation, route }) => {
               onRefresh={handleRefresh}
             />
           }
-          data={event} // Step 3: Use filtered events as data source
+          data={event} // Step 3: Use filtered events as data
           keyExtractor={(item) => item.eventName}
           renderItem={({ item }) => (
             <View style={styles.innerContainer}>
