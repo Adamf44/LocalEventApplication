@@ -430,8 +430,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 10,
     backgroundColor: "#3498db",
-    height: "13%",
-    marginTop: "0%",
   },
   titleText: {
     fontSize: 24,
@@ -445,7 +443,8 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: "5%",
+    marginTop: "10%",
+    padding: 5,
   },
 
   image: {
@@ -460,7 +459,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 10,
     borderRadius: 8,
-    height: "45%",
+    height: "100%",
     width: screenWidth * 0.5,
     borderColor: "#bdc3c7",
     borderWidth: 1,
@@ -471,7 +470,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: "#e74c3c",
-    padding: 10,
+    padding: 5,
   },
   toggleButton: {
     justifyContent: "center",

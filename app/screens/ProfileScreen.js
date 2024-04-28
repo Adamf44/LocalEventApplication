@@ -124,16 +124,15 @@ const ProfileScreen = ({ navigation, route }) => {
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
         <Text style={styles.appHeadTitle}>Profile page</Text>
-
-        <TouchableOpacity onPress={handleLogout} style={styles.logInButton}>
-          <Text style={styles.logInButtonText}>Log out</Text>
-        </TouchableOpacity>
       </View>
 
       <Text style={styles.usernameText}>Welcome, {username}!</Text>
       {userData &&
         userData.map((item) => (
           <View style={styles.innerContainer} key={item.username}>
+            <TouchableOpacity onPress={handleLogout} style={styles.logInButton}>
+              <Text style={styles.logInButtonText}>Log out</Text>
+            </TouchableOpacity>
             <Image
               style={styles.proImg}
               source={require("../assets/profile.png")}
@@ -224,7 +223,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 10,
     backgroundColor: "#3498db",
-    height: "13%",
     marginTop: "0%",
   },
   titleText: {
@@ -247,14 +245,12 @@ const styles = StyleSheet.create({
   buttonCon1: {
     flexDirection: "row",
     justifyContent: "center",
-    marginHorizontal: 10,
-    marginTop: "10%",
   },
   proImg: {
     width: 150,
     height: 150,
     marginBottom: "5%",
-    opacity: 0.4,
+    opacity: 0.1,
   },
 
   line: {
@@ -267,21 +263,20 @@ const styles = StyleSheet.create({
     width: 100,
   },
   lineSep: {
-    height: 5,
-    width: screenWidth * 0.9,
-    opacity: 0.1,
+    height: 2,
+    width: screenWidth * 0.5,
+    opacity: 0.2,
     alignSelf: "center",
   },
   logInButton: {
     backgroundColor: "#e74c3c",
     justifyContent: "center",
-    alignSelf: "center",
+    alignSelf: "left",
     alignItems: "center",
     borderRadius: 8,
     padding: 15,
     width: 80,
     height: 50,
-    marginBottom: "-8%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -333,7 +328,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   eventHistoryButton: {
-    backgroundColor: "#f39c12",
+    backgroundColor: "#e74c3c",
     margin: "5%",
     borderRadius: 8,
     padding: 12,
@@ -345,7 +340,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   savedEventButton: {
-    backgroundColor: "#e74c3c",
+    backgroundColor: "#f39c12",
     margin: "5%",
     borderRadius: 8,
     padding: 12,
@@ -369,7 +364,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   hisButton: {
-    backgroundColor: "#f39c12",
+    backgroundColor: "#e74c3c",
     margin: "5%",
     borderRadius: 8,
     padding: 12,
@@ -444,22 +439,21 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   usernameText: {
-    alignSelf: "center",
+    alignSelf: "flex-start",
     padding: 10,
-    fontSize: 25,
+    fontSize: 20,
+    fontStyle: "italic",
     fontWeight: "bold",
     opacity: 1,
-    marginBottom: "5%",
     color: "#2c3e50",
   },
   innerContainer: {
     backgroundColor: "snow",
     alignItems: "center",
     alignSelf: "center",
-    padding: 16,
+    padding: 10,
     marginBottom: 20,
     width: screenWidth * 0.9,
-    height: "65%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,

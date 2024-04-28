@@ -263,7 +263,7 @@ const CreateEventScreen = ({ navigation, route }) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "heigh"}
+      behavior={Platform.OS === "ios" ? "padding" : ""}
     >
       <View style={styles.appHead}>
         <Text style={styles.titleText}>EventFinder</Text>
@@ -394,8 +394,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 10,
     backgroundColor: "#3498db",
-    height: "13%",
-    marginTop: "0%",
   },
   titleText: {
     fontSize: 24,
@@ -410,6 +408,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "left",
     paddingBottom: 100,
+    padding: 10,
   },
 
   line: {
@@ -443,11 +442,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     alignSelf: "center",
-    fontSize: 20,
+    fontSize: 25,
+    fontStyle: "italic",
     fontWeight: "bold",
     color: "#2c3e50",
-    marginTop: 10,
-    marginBottom: 5,
+    marginBottom: 10,
   },
   appHeadTitle: {
     fontSize: 18,
@@ -465,10 +464,10 @@ const styles = StyleSheet.create({
   input: {
     alignSelf: "center",
     width: "90%",
-    height: 35,
+    height: 40,
     borderWidth: 1,
     borderColor: "black",
-    marginBottom: 20,
+    marginBottom: 15,
     paddingHorizontal: 15,
     borderRadius: 5,
     color: "#2c3e50",

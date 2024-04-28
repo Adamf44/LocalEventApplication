@@ -319,8 +319,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     padding: 10,
-    backgroundColor: "#3498db",
-    height: "13%",
+    backgroundColor: "#2c3e50",
     marginTop: "0%",
   },
   titleText: {
@@ -347,7 +346,7 @@ const styles = StyleSheet.create({
     height: 20,
     width: 10,
   },
-  navHomeImg: { height: 30, width: 30, opacity: 1 },
+  navHomeImg: { height: 30, width: 30, opacity: 1, tintColor: "#2c3e50" },
   navButtons: { padding: 10 },
 
   logInButton: {
@@ -372,11 +371,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     alignSelf: "center",
-    fontSize: 20,
+    fontSize: 25,
+    fontStyle: "italic",
     fontWeight: "bold",
     color: "#2c3e50",
-    marginTop: 10,
-    marginBottom: 5,
+    marginBottom: 10,
   },
   appHeadTitle: {
     fontSize: 18,
@@ -394,10 +393,10 @@ const styles = StyleSheet.create({
   input: {
     alignSelf: "center",
     width: "90%",
-    height: 35,
+    height: 40,
     borderWidth: 1,
     borderColor: "black",
-    marginBottom: 20,
+    marginBottom: 15,
     paddingHorizontal: 15,
     borderRadius: 5,
     color: "#2c3e50",

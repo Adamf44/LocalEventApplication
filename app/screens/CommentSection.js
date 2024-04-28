@@ -81,7 +81,12 @@ const CommentSection = ({ navigation, route }) => {
   const fetchData = async () => {
     setIsRefreshing(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "Events"));
+      const q = query(
+        collection(db, "Events"),
+        where("eventName", "==", eventName)
+      );
+      const querySnapshot = await getDocs(q);
+
       let events = [];
       querySnapshot.forEach((doc) => {
         const {
@@ -190,7 +195,6 @@ const CommentSection = ({ navigation, route }) => {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : ""}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 200 : 0} // Adjust based on your layout
       >
         <View style={styles.appHead}>
           <Text style={styles.titleText}>EventFinder</Text>
@@ -274,7 +278,7 @@ const CommentSection = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: "lightgrey",
   },
   appHead: {
@@ -282,8 +286,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 10,
     backgroundColor: "#3498db",
-    height: "13%",
-    marginTop: "0%",
   },
   titleText: {
     fontSize: 24,
@@ -300,11 +302,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: "13%",
   },
-  butCon: {
-    flexDirection: "row",
-    padding: 10,
-    justifyContent: "space-between",
-  },
   image: {
     height: 100,
     width: 250,
@@ -313,6 +310,7 @@ const styles = StyleSheet.create({
     backgroundColor: "snow",
   },
   eventContainer: {
+    flex: 2,
     backgroundColor: "white",
     margin: 5,
     shadowColor: "#000",
@@ -365,8 +363,10 @@ const styles = StyleSheet.create({
     height: 30,
     width: 30,
     opacity: 1,
+    tintColor: "#2c3e50",
   },
   commentFlatListContainer: {
+    flex: 2,
     flexDirection: "column",
     backgroundColor: "lightgrey",
     padding: 5,
@@ -385,24 +385,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
+  content: {
+    fontSize: 12,
+    paddingLeft: 5,
+    color: "#2c3e50",
+  },
+  butCon: {
+    flex: 1,
+    flexDirection: "row",
+    padding: 20,
+    backgroundColor: "lightgrey",
+    // justifyContent: "space-between",
+  },
   commentButton: {
     backgroundColor: "#2ecc71",
     borderRadius: 8,
     height: 35,
     width: "30%",
     justifyContent: "center",
-    marginBottom: 50,
+    marginLeft: 5,
+    //marginBottom: 50,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  content: {
-    fontSize: 12,
-    paddingLeft: 5,
-    color: "#2c3e50",
-  },
-
   eventCommentInput: {
     height: 40,
     padding: 5,
@@ -414,6 +421,7 @@ const styles = StyleSheet.create({
   },
   commentButtonText: {
     fontSize: 12,
+    justifyContent: "center",
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",

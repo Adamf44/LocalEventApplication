@@ -186,34 +186,46 @@ const EventBookmarks = ({ navigation, route }) => {
           source={require("../assets/left.png")}
         />
       </TouchableOpacity>
-      <FlatList
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
-        }
-        data={bookmarkedEvents}
-        keyExtractor={(item) => item.eventName}
-        renderItem={({ item }) => (
-          <View style={styles.innerContainer}>
-            <Text style={styles.eventName}>"{item.eventName}"</Text>
-            <Text style={styles.eventLocation}>{item.eventLocation}</Text>
-            <Text style={styles.eventDate}>{item.eventDate}</Text>
-            <TouchableOpacity
-              style={styles.showMoreButton}
-              onPress={() => handleShowMorePress(item.eventName)}
-            >
-              <Text style={styles.showMoreButtonText}>Show More</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.removeBookmarkButton}
-              onPress={() => handleRemoveBookmark(userEmail, item.id)}
-            >
-              <Text style={styles.removeBookmarkButtonText}>
-                Remove Bookmark
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
+
+      <View style={styles.bookmarkContent}>
+        <FlatList
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
+          }
+          data={bookmarkedEvents}
+          keyExtractor={(item) => item.eventName}
+          renderItem={({ item }) => (
+            <View style={styles.innerContainer}>
+              <Icon
+                name="bookmark"
+                size={30}
+                color="#fff"
+                style={styles.bookIcon}
+              />
+
+              <Text style={styles.eventName}>"{item.eventName}"</Text>
+
+              <View style={styles.butCon}>
+                <TouchableOpacity
+                  style={styles.showMoreButton}
+                  onPress={() => handleShowMorePress(item.eventName)}
+                >
+                  <Text style={styles.showMoreButtonText}>Show More</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.removeBookmarkButton}
+                  onPress={() => handleRemoveBookmark(userEmail, item.id)}
+                >
+                  <Text style={styles.removeBookmarkButtonText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        />
+      </View>
     </View>
   );
 };
@@ -247,15 +259,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: "13%",
   },
-
   bButton: { padding: 10 },
 
   bButtonImg: {
     height: 30,
     width: 30,
     opacity: 1,
+    tintColor: "#2c3e50",
   },
-
+  bookmarkContent: {
+    alignItems: "center",
+    padding: 10,
+    marginBottom: screenHeight * 0.25,
+  },
+  butCon: {
+    alignItems: "center",
+    marginTop: 10,
+  },
   line: {
     height: 2,
     backgroundColor: "#3498db",
@@ -267,13 +287,14 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     borderWidth: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#f39c12",
     borderColor: "#ddd",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    borderRadius: 30,
+    padding: 20,
+    marginBottom: 15,
     width: screenWidth * 0.9,
-    alignSelf: "center",
+    height: 170,
+    alignSelf: "flex-start",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -290,10 +311,9 @@ const styles = StyleSheet.create({
   showMoreButton: {
     backgroundColor: "#3498db",
     borderRadius: 8,
-    margin: 5,
     height: 30,
+    marginBottom: 10,
     width: "70%",
-    alignSelf: "flex-start",
     justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -309,10 +329,8 @@ const styles = StyleSheet.create({
   removeBookmarkButton: {
     backgroundColor: "#e74c3c",
     borderRadius: 8,
-    margin: 5,
     height: 30,
     width: "70%",
-    alignSelf: "flex-start",
     justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -322,7 +340,6 @@ const styles = StyleSheet.create({
   removeBookmarkButtonText: {
     fontSize: 12,
     color: "#fff",
-    fontWeight: "bold",
     textAlign: "center",
   },
 
@@ -342,7 +359,6 @@ const styles = StyleSheet.create({
   bookButtonText: {
     fontSize: 12,
     color: "#fff",
-    fontWeight: "bold",
     textAlign: "center",
   },
   bookIcon: {
@@ -372,10 +388,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   eventName: {
-    fontSize: 25,
-    fontWeight: "bold",
-    color: "black",
+    fontSize: 20,
+    color: "snow",
     fontStyle: "italic",
+    textAlign: "center",
   },
   eventDescription: {
     marginTop: 5,
@@ -386,14 +402,13 @@ const styles = StyleSheet.create({
   eventLocation: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#3498db",
+    color: "snow",
   },
   eventDate: {
     fontSize: 12,
     marginTop: 5,
     fontStyle: "italic",
-    fontWeight: "bold",
-    color: "#3498db",
+    color: "snow",
   },
   eventStartTime: {
     fontSize: 10,

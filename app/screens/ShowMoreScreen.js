@@ -290,7 +290,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 10,
     backgroundColor: "#3498db",
-    height: "13%",
     marginTop: "0%",
   },
   titleText: {
@@ -332,7 +331,7 @@ const styles = StyleSheet.create({
     backgroundColor: "lightgrey",
     borderColor: "#ddd",
     padding: 10,
-    marginBottom: screenHeight + 25,
+    marginBottom: screenHeight * 0.1,
     width: screenWidth,
     alignSelf: "center",
     shadowColor: "#000",
@@ -342,7 +341,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   navButtons: { padding: 10 },
-  navHomeImg: { height: 30, width: 30, opacity: 1 },
+  navHomeImg: { height: 30, width: 30, opacity: 1, tintColor: "#2c3e50" },
 
   logInButton: {
     backgroundColor: "#e74c3c",

@@ -54,6 +54,7 @@ function UserPostedEventsScreen({ navigation }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [bookmarkedEvents, setBookmarkedEvents] = useState([]);
+  const [eventAmount, setEventAmount] = useState("");
 
   //use effect to get auth status
   useEffect(() => {
@@ -118,6 +119,7 @@ function UserPostedEventsScreen({ navigation }) {
           }
         });
         setBookmarkedEvents(events);
+        setEventAmount(events.length);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
@@ -171,6 +173,8 @@ function UserPostedEventsScreen({ navigation }) {
           source={require("../assets/left.png")}
         />
       </TouchableOpacity>
+      <Text style={styles.comAmount}>Active Events: {eventAmount} </Text>
+
       <View style={styles.flatListContainer}>
         <FlatList
           refreshControl={
@@ -241,6 +245,7 @@ const styles = StyleSheet.create({
     height: 30,
     width: 30,
     opacity: 1,
+    tintColor: "#2c3e50",
   },
 
   line: {
@@ -280,6 +285,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10,
   },
+  comAmount: {
+    fontSize: 25,
+    color: "#2c3e50",
+    fontWeight: "bold",
+    padding: 5,
+    flexDirection: "row",
+    alignSelf: "center",
+  },
 
   showMoreButton: {
     backgroundColor: "#3498db",
@@ -287,7 +300,7 @@ const styles = StyleSheet.create({
     margin: 5,
     height: 30,
     width: "70%",
-    alignSelf: "flex-start",
+    alignSelf: "center",
     justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -306,7 +319,7 @@ const styles = StyleSheet.create({
     height: 30,
     margin: 5,
     width: "70%",
-    alignSelf: "flex-start",
+    alignSelf: "center",
     justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -366,20 +379,22 @@ const styles = StyleSheet.create({
   },
   eventName: {
     fontSize: 25,
-    fontWeight: "bold",
     color: "black",
     fontStyle: "italic",
+    textAlign: "center",
   },
   eventDescription: {
     marginTop: 5,
     fontSize: 14,
     color: "#7f8c8d",
     marginBottom: 12,
+    textAlign: "center",
   },
   eventLocation: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#3498db",
+    textAlign: "center",
   },
   eventDate: {
     fontSize: 12,
@@ -387,6 +402,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     fontWeight: "bold",
     color: "#3498db",
+    textAlign: "center",
   },
   eventStartTime: {
     fontSize: 10,

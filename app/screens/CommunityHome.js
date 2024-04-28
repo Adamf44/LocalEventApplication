@@ -334,13 +334,13 @@ const CommunityHome = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "aliceblue",
+    backgroundColor: "lightgrey",
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
     padding: 10,
-    backgroundColor: "#3498db",
+    backgroundColor: "#2c3e50",
     height: "13%",
   },
   titleText: {
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: "13%",
   },
-  navHomeImg: { height: 30, width: 30, opacity: 1 },
+  navHomeImg: { height: 30, width: 30, opacity: 1, tintColor: "#2c3e50" },
   navButtons: { marginRight: 50 },
   searchContainer: {
     flexDirection: "row",
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   innerContainer: {
     marginTop: "5%",
     borderWidth: 2,
-    backgroundColor: "gainsboro",
+    backgroundColor: "snow",
     borderColor: "darkgrey",
     borderRadius: 30,
     padding: 30,

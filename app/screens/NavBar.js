@@ -115,17 +115,18 @@ const styles = StyleSheet.create({
   navHomeImg: {
     height: 30,
     width: 30,
-    opacity: 1,
+    opacity: 0.8,
+    tintColor: "gainsboro",
   },
   line: {
-    height: 2,
-    backgroundColor: "#3498db",
+    height: 5,
     marginVertical: 5,
   },
   lines: {
-    height: 20,
+    height: 30,
     width: 10,
-    opacity: 0.76,
+    opacity: 0.3,
+    tintColor: "gainsboro",
   },
 });
 

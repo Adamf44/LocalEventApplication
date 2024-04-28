@@ -116,14 +116,13 @@ const NotificationScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ecf0f1",
+    backgroundColor: "lightgrey",
   },
   appHead: {
     flexDirection: "row",
     justifyContent: "space-between",
     padding: 10,
     backgroundColor: "#3498db",
-    height: "13%",
     marginTop: "0%",
   },
   titleText: {

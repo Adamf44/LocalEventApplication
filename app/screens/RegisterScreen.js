@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#3498db",
   },
-  navHomeImg: { height: 30, width: 30, opacity: 1 },
+  navHomeImg: { height: 30, width: 30, opacity: 1, tintColor: "#2c3e50" },
   navButtons: { padding: 10 },
 
   formContainer: {
