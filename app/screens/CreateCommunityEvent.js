@@ -55,7 +55,9 @@ const CreateCommunityEvent = ({ navigation, route }) => {
   const [eventVillage, setEventVillage] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
-  //use effect to get auth status
+
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     setCommunityName(comName);
     const auth = getAuth();
@@ -69,6 +71,7 @@ const CreateCommunityEvent = ({ navigation, route }) => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
+  //expo image picker function
   async function pickImage() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -91,7 +94,7 @@ const CreateCommunityEvent = ({ navigation, route }) => {
         // Upload image to firebase
         const storageRef = ref(storage, "event_images/" + eventName);
         uploadBytes(storageRef, blob).then((snapshot) => {
-          console.log("Uploaded a blob!");
+          console.log("Uploaded a blob");
         });
         // Set event image using the selected asset URI
         setEventImage(selectedAsset.uri);
@@ -123,10 +126,9 @@ const CreateCommunityEvent = ({ navigation, route }) => {
         Alert.alert("Error", "All fields are required.");
         return;
       }
+      //add image to firebase cloud storage
       const response = await fetch(eventImage);
-
       const imageBlob = await response.blob();
-
       const storage = getStorage();
       const storageRef = ref(storage, "event_images/" + eventName);
 

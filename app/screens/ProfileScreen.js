@@ -31,7 +31,8 @@ const ProfileScreen = ({ navigation, route }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  //use effect to get auth status
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -42,6 +43,7 @@ const ProfileScreen = ({ navigation, route }) => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
+  //use effect to get user info upon nav to profile screen
   useEffect(() => {
     const getUserAbout = async () => {
       try {
@@ -83,7 +85,7 @@ const ProfileScreen = ({ navigation, route }) => {
     getUserAbout();
   }, []);
 
-  //to handle the log out
+  //to handle the log out - clears async token and removes firebase auth
   const handleLogout = async () => {
     setUserData(null);
     setUsername(null);

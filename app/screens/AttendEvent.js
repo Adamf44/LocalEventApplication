@@ -25,7 +25,9 @@ const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
 
 const AttendEvent = ({ navigation, route }) => {
+  //get event name from route from home
   const { eventName } = route.params || {};
+
   const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {

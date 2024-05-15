@@ -99,7 +99,8 @@ const CreateEventScreen = ({ navigation, route }) => {
       }
     }
   }
-
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     getUname();
     const auth = getAuth();
@@ -110,6 +111,7 @@ const CreateEventScreen = ({ navigation, route }) => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
+  //function to get user email too add to created event
   const getUname = async () => {
     const userEmail = await AsyncStorage.getItem("userEmail");
     setUserEmail(userEmail);
@@ -126,9 +128,10 @@ const CreateEventScreen = ({ navigation, route }) => {
       return null;
     }
   };
-
+  //function to create event
   const createEvent = async () => {
     try {
+      //minimal validtion
       if (
         !eventName ||
         !eventDescription ||
@@ -157,10 +160,7 @@ const CreateEventScreen = ({ navigation, route }) => {
         Alert.alert("Town / village must be longer than 4 characters!");
         return;
       }
-      if (eventLocation.length < 4) {
-        Alert.alert("Event location must be longer than 4 characters!");
-        return;
-      }
+
       if (numberTest(eventStartTime) == false) {
         Alert.alert("Please enter a valid start/end time!");
         return;
@@ -331,13 +331,22 @@ const CreateEventScreen = ({ navigation, route }) => {
           onChangeText={(text) => setEventEndTime(text)}
           placeholder="Event/Activity End time"
         />
+
+        <TextInput
+          style={styles.input}
+          value={eventDate}
+          onChangeText={(text) => setEventDate(text)}
+          placeholder="Date of event"
+        />
         <Text style={styles.sectionTitle}>Organizer Information</Text>
+
         <TextInput
           style={styles.input}
           value={organizerName}
           onChangeText={(text) => setOrganizerName(text)}
-          placeholder="Organizer Name"
+          placeholder="Organizer name"
         />
+
         <TextInput
           style={styles.input}
           value={organizerContact}

@@ -8,6 +8,8 @@ import {
   TextInput,
   Dimensions,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../database/config";
@@ -55,12 +57,13 @@ const RegisterScreen = ({ navigation }) => {
       //first name
       if (username == "") {
         Alert.alert("First name field is empty!");
-      } else if (username.length < 5) {
+      } else if (username.length < 4) {
         Alert.alert("Username must be longer than 5 characters!");
-      } else if (checkIfUsernameExists(username)) {
-        Alert.alert("Username already exists");
-        return;
       }
+      //else if (checkIfUsernameExists(username)) {
+      // Alert.alert("Username already exists");
+      // return;
+      // }
 
       //Email
       if (email == "") {
@@ -109,7 +112,7 @@ const RegisterScreen = ({ navigation }) => {
       }
 
       const auth = getAuth();
-
+      //firebase auth create
       await createUserWithEmailAndPassword(auth, email, password);
 
       const user = auth.currentUser;
@@ -123,6 +126,7 @@ const RegisterScreen = ({ navigation }) => {
       };
 
       await setDoc(doc(db, "Users", user.uid), userData);
+
       //setting user email as async item
       await AsyncStorage.setItem("userEmail", email);
 
@@ -141,6 +145,7 @@ const RegisterScreen = ({ navigation }) => {
       console.error("Error creating user: ", error.message);
       Alert.alert("Error", "Failed to sign up. Please try again later.");
     }
+
     function validEmail(string) {
       var res1 = /[@]/.test(string);
       var res2 = /[.]/.test(string);
@@ -159,6 +164,8 @@ const RegisterScreen = ({ navigation }) => {
       //If string contains at least one number
       return /[1-9]/.test(string);
     }
+    //functions below are to read existing usernames for unique username requirment,
+    //did not get it working 100% so not used
     async function readExistingUsernames() {
       const docSnap = await getDocs(collection(db, "Users"));
       const usernames = docSnap.docs.map((doc) => doc.data().username);
@@ -186,6 +193,7 @@ const RegisterScreen = ({ navigation }) => {
         <Text style={styles.titleText}>EventFinder</Text>
         <Text style={styles.appHeadTitle}>Create an Account</Text>
       </View>
+
       <TouchableOpacity
         style={styles.navButtons}
         onPress={() => navigation.goBack()}
@@ -195,6 +203,7 @@ const RegisterScreen = ({ navigation }) => {
           source={require("../assets/left.png")}
         />
       </TouchableOpacity>
+
       <View style={styles.formContainer}>
         <Text style={styles.formTitle}>
           Please fill out the required fields:
@@ -239,9 +248,11 @@ const RegisterScreen = ({ navigation }) => {
           secureTextEntry
         />
       </View>
-      <TouchableOpacity style={styles.button} onPress={createUser}>
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </TouchableOpacity>
+      <View style={styles.butCon}>
+        <TouchableOpacity style={styles.button} onPress={createUser}>
+          <Text style={styles.buttonText}>Sign Up</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -256,9 +267,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 10,
     backgroundColor: "#3498db",
-    height: "13%",
     marginTop: "0%",
   },
+
   titleText: {
     fontSize: 24,
     fontWeight: "bold",
@@ -286,20 +297,20 @@ const styles = StyleSheet.create({
   navButtons: { padding: 10 },
 
   formContainer: {
+    flex: 1,
     justifyContent: "center",
     padding: 25,
   },
   formTitle: {
     color: "#2c3e50",
     fontSize: 18,
-    padding: 18,
+    padding: 10,
     textDecorationLine: "underline",
     fontWeight: "bold",
-    marginBottom: "5%",
   },
   input: {
     width: "100%",
-    height: 50,
+    height: 40,
     borderWidth: 1,
     borderColor: "#2c3e50",
     marginBottom: 20,
@@ -307,14 +318,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     fontSize: 20,
   },
+  butCon: {
+    flex: 1,
+    marginTop: 10,
+  },
   button: {
     backgroundColor: "#b22222",
     borderRadius: 5,
     width: screenHeight * 0.15,
-    height: 40,
-    marginBottom: 10,
     alignSelf: "center",
-    marginTop: 10,
   },
   buttonText: {
     color: "white",

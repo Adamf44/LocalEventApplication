@@ -43,7 +43,8 @@ const EventBookmarks = ({ navigation, route }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [bookmarkedEvents, setBookmarkedEvents] = useState([]);
 
-  //use effect to get auth status
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     fetchBookmarkedEvents();
     const auth = getAuth();

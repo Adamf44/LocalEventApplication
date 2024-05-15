@@ -2,6 +2,8 @@ import React from "react";
 import { View, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
+//nav bar seperate component
+//initialised in app.js for every screen
 const NavBar = ({ isAuthenticated }) => {
   const navigation = useNavigation();
 

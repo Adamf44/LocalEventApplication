@@ -71,7 +71,9 @@ const HomeScreen = ({ navigation, route }) => {
   const [filteredEvents, setFilteredEvent] = useState(event); // Initialize with event
   const [eventAmount, setEventAmount] = useState("");
 
-  //use effect to get auth status
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
+  //this use effect also fetches event data and user location (For filtering between county and all)
   useEffect(() => {
     fetchData();
     fetchUserLocation();
@@ -85,13 +87,6 @@ const HomeScreen = ({ navigation, route }) => {
 
     return () => unsubscribe();
   }, [setIsAuthenticated]);
-
-  const filterEvents = (query) => {
-    const filteredEvents = event.filter((item) =>
-      item.eventName.toLowerCase().includes(query.toLowerCase())
-    );
-    setFilteredEvent(filteredEvents);
-  };
 
   //function to get users location to allow them to filter events to their county
   const fetchUserLocation = async () => {
@@ -120,29 +115,40 @@ const HomeScreen = ({ navigation, route }) => {
     }
   };
 
+  //working function to filter events - changes between event and filteredEvents in flatlist data
   const toggleEvents = () => {
-    if (filteredEvents === event || filteredEvents.length === 0) {
+    if (filteredEvents === event) {
       // User is currently viewing events from their county or all events, switch to events in their county
       const eventsInUserCounty = event.filter(
         (item) => item.eventCounty === userLocation
       );
+      //sets filteredEvent data as events with same county as userCounty
       setEventAmount(eventsInUserCounty.length);
       setFilteredEvent(eventsInUserCounty);
     } else {
-      // User is currently viewing events in their county, switch to all events
+      // User is currently viewing events in their county, switch back to all events
       setFilteredEvent(event);
       setEventAmount(event.length);
     }
   };
+  /////////////////////////////
+  const filterEvents = (query) => {
+    const filteredEvents = event.filter((item) =>
+      item.eventName.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredEvent(filteredEvents);
+  };
 
-  // Function to filter events based on userLocation
   const filterEventsByLocation = () => {
     if (!userLocation) return event; // Return all events if user location is not available
     return event.filter((item) => item.eventLocation === userLocation);
   };
+  ////////////////////////
 
+  // search bar logic
   const handleSearch = (query) => {
     setSearchQuery(query);
+    //set event data to search input - uses change on text not submit button
     filterEvents(query);
   };
 
@@ -204,7 +210,7 @@ const HomeScreen = ({ navigation, route }) => {
   const handleRefresh = () => {
     fetchData();
   };
-  // not in use but could be
+  // not in use but could be for conditional authenticaiton
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
@@ -260,7 +266,7 @@ const HomeScreen = ({ navigation, route }) => {
   const handleAttend = (userEmail, eventName) => {
     const eventRef = collection(db, "Events");
     const eventQuery = query(eventRef, where("eventName", "==", eventName));
-
+    //query to get attendees - check if user is not already attending
     getDocs(eventQuery)
       .then((querySnapshot) => {
         if (querySnapshot.docs.length > 0) {
@@ -326,7 +332,7 @@ const HomeScreen = ({ navigation, route }) => {
             {filteredEvents.length === 1 ? "Show All" : "Sort By Location"}
           </Text>
         </TouchableOpacity>
-        <Text style={styles.eventsFoundText}>{eventAmount} Events Found</Text>
+        <Text style={styles.eventsFoundText}>{eventAmount} Active Events</Text>
       </View>
 
       <View style={styles.flatListContainer}>

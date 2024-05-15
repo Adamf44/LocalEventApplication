@@ -52,11 +52,14 @@ const CommentSection = ({ navigation, route }) => {
   const [comments, setComments] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [newComment, setNewComment] = useState("");
+  //get event name from route from home
   const eventName = route.params?.eventName;
   const [username, setUser] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -69,6 +72,7 @@ const CommentSection = ({ navigation, route }) => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
+  //get event and comment data on load
   useEffect(() => {
     console.log("event name:", eventName);
     if (eventName) {
@@ -122,6 +126,7 @@ const CommentSection = ({ navigation, route }) => {
   const fetchCommentData = async () => {
     setIsRefreshing(true);
     try {
+      //get logged in user
       const userEmail = await AsyncStorage.getItem("userEmail");
 
       const eventDoc = doc(db, "Events", eventName);

@@ -45,7 +45,8 @@ function EditAccountScreen({ route, navigation }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  //use effect to get auth status
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -58,6 +59,7 @@ function EditAccountScreen({ route, navigation }) {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
+  //get current info for user
   useEffect(() => {
     readUserInfo();
   }, []);

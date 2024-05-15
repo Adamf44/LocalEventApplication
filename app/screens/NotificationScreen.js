@@ -32,6 +32,8 @@ const NotificationScreen = ({ navigation }) => {
   const [userEmail, setUserEmail] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     fetchData();
     const auth = getAuth();
@@ -43,6 +45,8 @@ const NotificationScreen = ({ navigation }) => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
+  //function to get logged in user email active events, then the attendees array on each event
+  //Any time theres a new attendee a notification is created
   const fetchData = async () => {
     setIsRefreshing(true);
     try {

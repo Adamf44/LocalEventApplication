@@ -52,7 +52,8 @@ const ShowMoreScreen = ({ navigation, route }) => {
   const [userEmail, setUserEmail] = useState("");
   const [NameInAttendee, setNameInAttendee] = useState(false);
 
-  //use effect to control auth
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -69,14 +70,16 @@ const ShowMoreScreen = ({ navigation, route }) => {
     }, [isAuthenticated])
   );
   console.log("User is authenticated on home: " + isAuthenticated);
-  ////end auth
 
+  //use eff to get name of event user clicked show more on and fetch its data
   useEffect(() => {
     console.log("eventName:", eventName);
     if (eventName) {
       fetchData();
     }
   }, [eventName]);
+
+  //function to fetch event info
   function fetchData() {
     setIsRefreshing(true);
     getDocs(
@@ -143,7 +146,7 @@ const ShowMoreScreen = ({ navigation, route }) => {
   const handleLoginPress = () => {
     navigation.navigate("LoginScreen");
   };
-
+  //function to handle user clicking 'attend event' - adds user email to that event
   const handleAttend = (userEmail, eventName) => {
     const eventRef = collection(db, "Events");
     const eventQuery = query(eventRef, where("eventName", "==", eventName));
@@ -246,7 +249,7 @@ const ShowMoreScreen = ({ navigation, route }) => {
                     Contact {item.organizerName}: {item.organizerContact}
                   </Text>
                   <Text style={styles.infoBox}>
-                    Find {item.organizerName} on social media:
+                    Find {item.organizerName} on social media:{" "}
                     {item.organizerSocialMedia}
                   </Text>
 

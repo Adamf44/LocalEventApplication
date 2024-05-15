@@ -56,7 +56,8 @@ function UserPostedEventsScreen({ navigation }) {
   const [bookmarkedEvents, setBookmarkedEvents] = useState([]);
   const [eventAmount, setEventAmount] = useState("");
 
-  //use effect to get auth status
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     fetchPostedEvents();
     const auth = getAuth();
@@ -128,7 +129,7 @@ function UserPostedEventsScreen({ navigation }) {
         setIsRefreshing(false);
       });
   };
-
+  //delete event function
   const handleDeleteEvent = async (eventID) => {
     Alert.alert("Confirmation", "Are you sure you want to delete this event?", [
       {

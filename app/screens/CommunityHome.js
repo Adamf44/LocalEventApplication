@@ -52,11 +52,13 @@ const CommunityHome = ({ navigation, route }) => {
   const [eventPic, setEventPic] = useState(".");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  //get community name in route from clicking on a community
   const { comName } = route.params || {};
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
 
-  //use effect to get auth status
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     fetchData();
     const auth = getAuth();
@@ -67,6 +69,7 @@ const CommunityHome = ({ navigation, route }) => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
+  //function to get event data
   const fetchData = async () => {
     try {
       const value = await AsyncStorage.getItem("userEmail");

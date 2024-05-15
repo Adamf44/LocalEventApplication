@@ -36,6 +36,9 @@ import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
 
+//this is a screen with two tabs and two blocks of code for each tab - community screen for vieiwng
+//active communities and creating one
+
 //Globals
 const screenWidth = Dimensions.get("window").width;
 const screenHeight = Dimensions.get("window").height;
@@ -57,7 +60,8 @@ const CommunitiesTab = () => {
   const [userEmail, setUserEmail] = useState("");
   const [comAmount, setComAmount] = useState("");
 
-  //use effect to get auth status
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     console.log("User navigated to active communities tab");
     //fetchUserCommunities();
@@ -69,7 +73,8 @@ const CommunitiesTab = () => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
-  ///
+  //function to get communities user is part of, checks an array for other members too
+  //(creator and members added to the array)
   useFocusEffect(
     React.useCallback(() => {
       const fetchUserCommunities = async () => {
@@ -182,7 +187,9 @@ const CreateTab = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const navigation = useNavigation();
-  //use effect to get auth status
+
+  //auth hook initially setup for handling changes but user logs in first now so not neccessary
+  //also use async tokens mostly for authentication
   useEffect(() => {
     console.log("User navigated to create community tab");
     //fetchUserCommunities();
@@ -194,6 +201,7 @@ const CreateTab = () => {
     return () => unsubscribe();
   }, [setIsAuthenticated]);
 
+  //function to create a community
   const handleCreateCommunity = async () => {
     try {
       const userEmail = await AsyncStorage.getItem("userEmail");
@@ -286,9 +294,9 @@ const CommunityScreen = () => {
           let iconName;
 
           if (route.name === "Communities") {
-            iconName = "group"; // Set icon for 'Communities' tab
+            iconName = "group"; // icon for 'Communities' tab
           } else if (route.name === "Create") {
-            iconName = "add-circle"; // Set icon for 'Create' tab
+            iconName = "add-circle"; // icon for 'Create' tab
           }
 
           // Return the icon component
